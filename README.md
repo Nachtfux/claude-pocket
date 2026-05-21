@@ -15,12 +15,19 @@ device talks straight to the Anthropic and OpenAI APIs.
 
 ---
 
-## From London → Tokyo Developer Conference
+## From [Code with Claude London](https://claude.com/code-with-claude/london-extended) → Tokyo
 
-Built on the Cardputer ADV that Anthropic handed out at the **Developer
-Conference in London**, in time for the next stop in **Tokyo**. If you
-picked one up there, this firmware turns it into a working Claude voice
-assistant in about ten minutes:
+Built on the Cardputer ADV that Anthropic handed out at
+[**Code with Claude — London Extended**](https://claude.com/code-with-claude/london-extended),
+the day where attendees got to describe ideas and watch Claude Code turn
+them into working apps on the Cardputer right there in the room. Thank-you
+to the Anthropic team for that — taking a tiny working voice device home
+as event swag is genuinely the coolest piece of conference merch I've ever
+been handed. This firmware is what I built with the Cardputer after the
+day was over, in time for the next stop in **Tokyo**.
+
+If you picked one up at either event, flash this and you have a working
+Claude voice assistant in about ten minutes:
 
 1. Flash the firmware (see [Build](#build) below).
 2. Drop your `ANTHROPIC_API_KEY` and `OPENAI_API_KEY` into
@@ -149,10 +156,12 @@ battery in something that fits in your jacket pocket — and at a price point
 that makes "let me try Claude on hardware" a one-evening decision instead of
 a multi-month one. Couldn't have built this on anything cheaper.
 
-And thank-you to **Anthropic** for handing one of these out at the **London
-Developer Conference**, alongside the Claude Buddy bundle. The original
-"Build with Claude" examples were the starting point for the firmware here;
-Claude Pocket is the voice-assistant side built on top.
+And thank-you to **Anthropic** for handing one of these out at
+[**Code with Claude — London Extended**](https://claude.com/code-with-claude/london-extended),
+alongside the Claude Buddy bundle. The original *Build with Claude*
+examples were the starting point for the firmware here; Claude Pocket is
+the voice-assistant side built on top, with help from Claude Code itself.
+A small love-letter back to the event that gave me the hardware.
 
 Uses the [Anthropic API](https://docs.anthropic.com/) (`claude-sonnet-4-6`)
 and OpenAI Whisper + `gpt-4o-mini-tts`.
