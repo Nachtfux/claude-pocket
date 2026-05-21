@@ -32,12 +32,13 @@ const char* default_system_prompt() {
 std::string claude_stream(const char* user_text,
                           const std::string& history_json,
                           std::function<void(const std::string&)> on_token,
-                          std::function<void(const std::string&)> on_sentence) {
+                          std::function<void(const std::string&)> on_sentence,
+                          const char* system_prompt) {
     JsonDocument req;
     req["model"] = CLAUDE_MODEL;
     req["max_tokens"] = CLAUDE_MAX_TOKENS;
     req["stream"] = true;
-    req["system"] = default_system_prompt();
+    req["system"] = system_prompt ? system_prompt : default_system_prompt();
 
     JsonArray messages = req["messages"].to<JsonArray>();
     if (!history_json.empty()) {

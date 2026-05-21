@@ -344,6 +344,11 @@ void run_pipeline() {
     // then "Speaking..." once playback actually starts.
     set_state(State::SPEAKING, "Loading speech...");
 
+    // Free the recording's blocks before the TTS download grabs flash.
+    // /rec.pcm (~160 KB) + /tts.pcm (up to ~1.4 MB) can otherwise blow
+    // the 1.5 MB LittleFS partition and lfs_alloc divide-by-zeros.
+    LittleFS.remove(REC_FILE_PATH);
+
     // Stage 1: download the entire TTS body to LittleFS. Talks straight to
     // OpenAI — no proxy. Read loop is byte-counted and ignores transient
     // empty reads, so mbedTLS chunk-gaps don't truncate the download. Pass

@@ -24,6 +24,7 @@ constexpr Entry ENTRIES[] = {
     {"Snake",         "Classic",         app::Screen::SNAKE},
     {"Weather",       "Local forecast",  app::Screen::WEATHER},
     {"Radio",         "Internet radio",  app::Screen::RADIO},
+    {"Translator",    "Voice translate", app::Screen::TRANSLATE},
     {"Settings",      "WiFi, BT, Audio", app::Screen::SETTINGS},
 };
 constexpr int N = sizeof(ENTRIES) / sizeof(ENTRIES[0]);
@@ -52,12 +53,11 @@ void paint_full() {
         g_spark_ready = true;
     }
 
-    // Menu list on the right. 6 entries × 18 px ≈ 108 px fits the content
-    // area; we drop the per-row hint subtitle (which used to live below
-    // the label) to keep the height down — the labels are descriptive
-    // enough on their own once you've used the device once.
+    // Menu list on the right. 7 entries × 17 px = 119 px fits the content
+    // area exactly. Labels at 1.6× — bigger than the old 1.2× so the
+    // menu reads cleanly at arm's length without scrolling.
     const int list_x = 96;
-    const int row_h  = 18;
+    const int row_h  = 17;
     const int list_y = y0 + 2;
 
     for (int i = 0; i < N; ++i) {
@@ -70,7 +70,7 @@ void paint_full() {
         }
         M5.Display.setTextColor(to565(theme::DARK), selected ? to565(theme::LIGHT_GRAY)
                                                              : to565(theme::IVORY));
-        M5.Display.setTextSize(1.4f);
+        M5.Display.setTextSize(1.6f);
         M5.Display.setTextDatum(top_left);
         M5.Display.drawString(ENTRIES[i].label, list_x + 4, ry);
     }

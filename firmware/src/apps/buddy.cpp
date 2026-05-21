@@ -16,21 +16,34 @@ uint16_t to565(uint32_t rgb) {
 }
 
 void paint() {
-    M5.Display.fillRect(0, theme::CONTENT_TOP, theme::SCREEN_W, theme::CONTENT_H,
-                       to565(theme::IVORY));
-    M5.Display.setTextColor(to565(theme::DARK), to565(theme::IVORY));
-    M5.Display.setTextSize(2);
-    M5.Display.setTextDatum(top_center);
-    M5.Display.drawString("Claude Buddy", theme::SCREEN_W / 2, theme::CONTENT_TOP + 10);
+    M5.Display.fillRect(0, theme::CONTENT_TOP, theme::SCREEN_W,
+                       theme::CONTENT_H, to565(theme::IVORY));
+    M5.Display.setTextDatum(top_left);
 
-    M5.Display.setTextSize(1);
+    // Title
+    M5.Display.setTextColor(to565(theme::DARK), to565(theme::IVORY));
+    M5.Display.setTextSize(1.6f);
+    M5.Display.drawString("Claude Buddy", 8, theme::CONTENT_TOP + 4);
+
+    // Description — the BLE companion to Claude.app's Hardware Buddy.
     M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
-    M5.Display.drawString("BLE companion (port planned)", theme::SCREEN_W / 2,
-                          theme::CONTENT_TOP + 40);
-    M5.Display.drawString("Lives in the MicroPython buddy", theme::SCREEN_W / 2,
-                          theme::CONTENT_TOP + 56);
-    M5.Display.drawString("ESC = back", theme::SCREEN_W / 2,
-                          theme::CONTENT_TOP + 84);
+    M5.Display.setTextSize(1);
+    int y = theme::CONTENT_TOP + 28;
+    M5.Display.drawString("BLE pairing with Claude.app's", 8, y);
+    M5.Display.drawString("Hardware Buddy.  Approve and", 8, y + 11);
+    M5.Display.drawString("deny actions wirelessly.", 8, y + 22);
+
+    // Pointer to the original.
+    M5.Display.setTextColor(to565(theme::ORANGE), to565(theme::IVORY));
+    M5.Display.drawString("Source / port reference:", 8, y + 42);
+    M5.Display.setTextColor(to565(theme::DARK), to565(theme::IVORY));
+    M5.Display.drawString("github.com/moremas/", 8, y + 53);
+    M5.Display.drawString("build-with-claude (buddy/)", 8, y + 64);
+
+    // Footer hint
+    M5.Display.setTextDatum(bottom_left);
+    M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
+    M5.Display.drawString("`  back", 4, theme::SCREEN_H - 2);
 }
 
 }  // namespace
@@ -41,7 +54,10 @@ void tick() {
     if (!M5Cardputer.Keyboard.isChange() || !M5Cardputer.Keyboard.isPressed()) return;
     auto status = M5Cardputer.Keyboard.keysState();
     for (auto k : status.word) {
-        if (k == 'q' || k == '`') app::goto_screen(app::Screen::LAUNCHER);
+        if (k == '`') {
+            app::goto_screen(app::Screen::LAUNCHER);
+            return;
+        }
     }
 }
 

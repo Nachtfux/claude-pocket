@@ -8,11 +8,14 @@ namespace net {
 // One-shot streaming call to Claude. `on_token` fires for each text delta as
 // it arrives. `on_sentence` fires whenever the accumulated buffer ends in a
 // terminator (. ! ?) — pass the completed sentence to TTS to overlap stages.
+// If `system_prompt` is non-null it overrides default_system_prompt() for
+// this call (used e.g. by the Magic 8-Ball Buddy to swap Claude's tone).
 // Returns the full response on completion, or empty string on failure.
 std::string claude_stream(const char* user_text,
                           const std::string& history_json,
                           std::function<void(const std::string&)> on_token,
-                          std::function<void(const std::string&)> on_sentence);
+                          std::function<void(const std::string&)> on_sentence,
+                          const char* system_prompt = nullptr);
 
 // Default system prompt for Claude Pocket — copied from SPEC §6.4.
 const char* default_system_prompt();

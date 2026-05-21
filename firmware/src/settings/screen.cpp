@@ -13,7 +13,8 @@ namespace settings {
 
 namespace {
 
-enum class Section { MENU, WIFI_SCAN, WIFI_PASS, BLUETOOTH, VOLUME };
+enum class Section { MENU, WIFI_SCAN, WIFI_PASS, BLUETOOTH, VOLUME,
+                     BRIGHTNESS, ABOUT };
 
 struct Row {
     const char* label;
@@ -21,11 +22,23 @@ struct Row {
 };
 
 constexpr Row ROWS[] = {
-    {"WiFi",      Section::WIFI_SCAN},
-    {"Bluetooth", Section::BLUETOOTH},
-    {"Volume",    Section::VOLUME},
+    {"WiFi",       Section::WIFI_SCAN},
+    {"Bluetooth",  Section::BLUETOOTH},
+    {"Volume",     Section::VOLUME},
+    {"Brightness", Section::BRIGHTNESS},
+    {"About",      Section::ABOUT},
 };
 constexpr int N_ROWS = sizeof(ROWS) / sizeof(ROWS[0]);
+
+// Min brightness clamp — accidentally going to 0% would render the display
+// black and the device unrecoverable without flashing. 10% (~25/255) is
+// still readable in a dim room.
+constexpr uint8_t MIN_BRIGHTNESS_PCT = 10;
+
+void apply_display_brightness(uint8_t pct) {
+    if (pct < MIN_BRIGHTNESS_PCT) pct = MIN_BRIGHTNESS_PCT;
+    M5.Display.setBrightness((uint8_t)((uint16_t)pct * 255 / 100));
+}
 
 Section g_section = Section::MENU;
 int g_sel = 0;
@@ -55,35 +68,40 @@ void paint_menu() {
     M5.Display.setTextDatum(top_left);
     M5.Display.drawString("Settings", 8, theme::CONTENT_TOP + 4);
 
-    const int list_y = theme::CONTENT_TOP + 30;
-    const int row_h = 22;
+    // 5 entries × 18 px = 90 px after a 26 px header — fits the 119 px
+    // content area without scrolling.
+    const int list_y = theme::CONTENT_TOP + 26;
+    const int row_h  = 18;
     for (int i = 0; i < N_ROWS; ++i) {
         int ry = list_y + i * row_h;
         bool sel = (i == g_sel);
         if (sel) {
-            M5.Display.fillRoundRect(4, ry - 2, theme::SCREEN_W - 8, row_h - 2, 4,
+            M5.Display.fillRoundRect(4, ry - 1, theme::SCREEN_W - 8, row_h - 2, 4,
                                      to565(theme::LIGHT_GRAY));
-            M5.Display.fillRect(4, ry - 2, 3, row_h - 2, to565(theme::ORANGE));
+            M5.Display.fillRect(4, ry - 1, 3, row_h - 2, to565(theme::ORANGE));
         }
         M5.Display.setTextColor(to565(theme::DARK),
                                 sel ? to565(theme::LIGHT_GRAY) : to565(theme::IVORY));
         M5.Display.setTextSize(1.2f);
-        M5.Display.drawString(ROWS[i].label, 12, ry + 2);
+        M5.Display.drawString(ROWS[i].label, 12, ry + 1);
 
         const char* hint = "";
         char tmp[40];
         if (ROWS[i].target == Section::WIFI_SCAN) {
-            hint = WiFi.status() == WL_CONNECTED ? WiFi.SSID().c_str() : "nicht verbunden";
+            hint = WiFi.status() == WL_CONNECTED ? WiFi.SSID().c_str() : "disconnected";
         } else if (ROWS[i].target == Section::BLUETOOTH) {
-            hint = store().bluetooth_on ? "an" : "aus";
+            hint = store().bluetooth_on ? "on" : "off";
         } else if (ROWS[i].target == Section::VOLUME) {
             snprintf(tmp, sizeof(tmp), "%d%%", store().volume_pct);
+            hint = tmp;
+        } else if (ROWS[i].target == Section::BRIGHTNESS) {
+            snprintf(tmp, sizeof(tmp), "%d%%", store().brightness_pct);
             hint = tmp;
         }
         M5.Display.setTextColor(to565(theme::MID_GRAY),
                                 sel ? to565(theme::LIGHT_GRAY) : to565(theme::IVORY));
         M5.Display.setTextDatum(top_right);
-        M5.Display.drawString(hint, theme::SCREEN_W - 12, ry + 2);
+        M5.Display.drawString(hint, theme::SCREEN_W - 12, ry + 1);
         M5.Display.setTextDatum(top_left);
     }
 
@@ -118,6 +136,80 @@ void paint_volume() {
     M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
     M5.Display.setTextDatum(bottom_left);
     M5.Display.drawString("<- ->  ENTER save  ESC", 4, theme::SCREEN_H - 2);
+    M5.Display.setTextDatum(top_left);
+}
+
+void paint_brightness() {
+    fill_content(theme::IVORY);
+    M5.Display.setTextColor(to565(theme::DARK), to565(theme::IVORY));
+    M5.Display.setTextSize(2);
+    M5.Display.setTextDatum(top_left);
+    M5.Display.drawString("Brightness", 8, theme::CONTENT_TOP + 4);
+
+    int pct = store().brightness_pct;
+    const int bar_x = 16;
+    const int bar_y = theme::CONTENT_TOP + 56;
+    const int bar_w = theme::SCREEN_W - 32;
+    const int bar_h = 14;
+    M5.Display.drawRoundRect(bar_x, bar_y, bar_w, bar_h, 6, to565(theme::DARK));
+    M5.Display.fillRoundRect(bar_x + 2, bar_y + 2, (bar_w - 4) * pct / 100, bar_h - 4, 5,
+                             to565(theme::ORANGE));
+
+    char tmp[16];
+    snprintf(tmp, sizeof(tmp), "%d%%", pct);
+    M5.Display.setTextSize(1);
+    M5.Display.setTextDatum(top_center);
+    M5.Display.drawString(tmp, theme::SCREEN_W / 2, bar_y + bar_h + 6);
+
+    M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
+    M5.Display.setTextDatum(bottom_left);
+    M5.Display.drawString("<- ->  ENTER save  ESC", 4, theme::SCREEN_H - 2);
+    M5.Display.setTextDatum(top_left);
+}
+
+void paint_about() {
+    fill_content(theme::IVORY);
+    M5.Display.setTextColor(to565(theme::DARK), to565(theme::IVORY));
+    M5.Display.setTextSize(2);
+    M5.Display.setTextDatum(top_left);
+    M5.Display.drawString("About", 8, theme::CONTENT_TOP + 4);
+
+    M5.Display.setTextSize(1);
+    int y = theme::CONTENT_TOP + 26;
+    char val[48];
+
+    auto row = [&](const char* label, const char* value) {
+        M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
+        M5.Display.drawString(label, 8, y);
+        M5.Display.setTextColor(to565(theme::DARK), to565(theme::IVORY));
+        M5.Display.drawString(value, 80, y);
+        y += 11;
+    };
+
+    row("Firmware", CLAUDE_POCKET_VERSION);
+
+    snprintf(val, sizeof(val), "%u KB", (unsigned)(ESP.getFreeHeap() / 1024));
+    row("Heap free", val);
+
+    uint32_t up_s = millis() / 1000;
+    if (up_s >= 3600) snprintf(val, sizeof(val), "%uh %um",
+                               (unsigned)(up_s / 3600), (unsigned)((up_s / 60) % 60));
+    else              snprintf(val, sizeof(val), "%um %us",
+                               (unsigned)(up_s / 60), (unsigned)(up_s % 60));
+    row("Uptime", val);
+
+    if (WiFi.status() == WL_CONNECTED) {
+        row("IP", WiFi.localIP().toString().c_str());
+        snprintf(val, sizeof(val), "%d dBm", WiFi.RSSI());
+        row("WiFi RSSI", val);
+    } else {
+        row("WiFi", "disconnected");
+    }
+    row("MAC", WiFi.macAddress().c_str());
+
+    M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
+    M5.Display.setTextDatum(bottom_left);
+    M5.Display.drawString("`  back", 4, theme::SCREEN_H - 2);
     M5.Display.setTextDatum(top_left);
 }
 
@@ -262,9 +354,11 @@ void handle_menu(char k) {
     else if (k == '.' || k == 's') { g_sel = (g_sel + 1) % N_ROWS; paint_menu(); }
     else if (k == '\r' || k == ' ') {
         g_section = ROWS[g_sel].target;
-        if (g_section == Section::WIFI_SCAN) start_scan();
-        else if (g_section == Section::BLUETOOTH) paint_bluetooth();
-        else if (g_section == Section::VOLUME) paint_volume();
+        if (g_section == Section::WIFI_SCAN)        start_scan();
+        else if (g_section == Section::BLUETOOTH)   paint_bluetooth();
+        else if (g_section == Section::VOLUME)      paint_volume();
+        else if (g_section == Section::BRIGHTNESS)  paint_brightness();
+        else if (g_section == Section::ABOUT)       paint_about();
     } else if (k == 0x1b) {
         app::goto_screen(app::Screen::LAUNCHER);
     }
@@ -278,6 +372,39 @@ void handle_volume(char k) {
     else if (k == '\r') { save(); g_section = Section::MENU; paint_menu(); }
     else if (k == 0x1b)  { load();  // discard
                            g_section = Section::MENU; paint_menu(); }
+}
+
+void handle_brightness(char k) {
+    if (k == ',' || k == 'a') {
+        int p = store().brightness_pct;
+        p = (p >= 5) ? p - 5 : 0;
+        if (p < (int)MIN_BRIGHTNESS_PCT) p = (int)MIN_BRIGHTNESS_PCT;
+        store().brightness_pct = (uint8_t)p;
+        apply_display_brightness((uint8_t)p);
+        paint_brightness();
+    } else if (k == '/' || k == 'd') {
+        int p = store().brightness_pct;
+        p = (p <= 95) ? p + 5 : 100;
+        store().brightness_pct = (uint8_t)p;
+        apply_display_brightness((uint8_t)p);
+        paint_brightness();
+    } else if (k == '\r') {
+        save();
+        g_section = Section::MENU;
+        paint_menu();
+    } else if (k == 0x1b) {
+        load();   // discard live preview
+        apply_display_brightness(store().brightness_pct);
+        g_section = Section::MENU;
+        paint_menu();
+    }
+}
+
+void handle_about(char k) {
+    if (k == 0x1b || k == '\r') {
+        g_section = Section::MENU;
+        paint_menu();
+    }
 }
 
 void handle_bluetooth(char k) {
@@ -360,11 +487,13 @@ void tick() {
     // (` is used in place of ESC since Cardputer-Adv has no dedicated ESC.)
     auto dispatch = [&](char k) {
         switch (g_section) {
-            case Section::MENU:      handle_menu(k);      break;
-            case Section::WIFI_SCAN: handle_wifi_scan(k); break;
-            case Section::WIFI_PASS: handle_pass(k);      break;
-            case Section::BLUETOOTH: handle_bluetooth(k); break;
-            case Section::VOLUME:    handle_volume(k);    break;
+            case Section::MENU:       handle_menu(k);       break;
+            case Section::WIFI_SCAN:  handle_wifi_scan(k);  break;
+            case Section::WIFI_PASS:  handle_pass(k);       break;
+            case Section::BLUETOOTH:  handle_bluetooth(k);  break;
+            case Section::VOLUME:     handle_volume(k);     break;
+            case Section::BRIGHTNESS: handle_brightness(k); break;
+            case Section::ABOUT:      handle_about(k);      break;
         }
     };
     if (status.enter)              dispatch('\r');

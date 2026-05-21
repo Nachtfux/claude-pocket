@@ -23,6 +23,7 @@ struct Store {
     std::vector<Network> known_networks;
     bool bluetooth_on = false;
     uint8_t volume_pct = 60;
+    uint8_t brightness_pct = 80;
     bool wake_word_on = false;
 };
 

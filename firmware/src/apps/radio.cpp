@@ -31,6 +31,7 @@ constexpr Station STATIONS[] = {
     {"Antenne 1 Heilbronn",   "http://stream.antenne1.de/a1hn/livestream2.mp3"},
     {"Antenne Bayern Chill",  "http://mp3channels.webradio.antenne.de/chillout"},
     {"Charivari",             "http://rs5.stream24.net/stream"},
+    {"Inselradio Mallorca",   "http://inselradiomallorca.stream06.radiohost.de/inselradiomallorca-live_mp3-128"},
 };
 constexpr int N_STATIONS = sizeof(STATIONS) / sizeof(STATIONS[0]);
 
@@ -105,10 +106,11 @@ void paint() {
                           theme::SCREEN_W / 2,
                           theme::CONTENT_TOP + 40);
 
-    // Optional status line ("Connecting...", "Buffering...", etc.)
+    // Optional status line ("Connecting...", "Volume 75%", etc.) — yellow
+    // so transient value changes pop against the cream-on-dark UI.
     if (g_status_line[0]) {
-        M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
-        M5.Display.setTextSize(1);
+        M5.Display.setTextColor(to565(theme::YELLOW), to565(theme::IVORY));
+        M5.Display.setTextSize(1.2f);
         M5.Display.drawString(g_status_line, theme::SCREEN_W / 2,
                               theme::CONTENT_TOP + 64);
     }

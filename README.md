@@ -39,14 +39,16 @@ Claude voice assistant in about ten minutes:
 
 ## What it does
 
-A Claude-styled launcher with six entries:
+A Claude-styled launcher with seven entries:
 
 - **Claude Pocket** — the voice assistant. Press OK, speak, the device auto-
   detects when you're done (VAD), transcribes, thinks, and speaks back. The
   last 10 messages of conversation history persist across turns, so follow-up
   questions like "and how old is she?" resolve their own context.
-- **Claude Buddy** — placeholder for the BLE companion port from the *Build
-  with Claude* bundle (still a stub).
+- **Claude Buddy** — info screen pointing at the BLE companion from the
+  upstream [build-with-claude](https://github.com/moremas/build-with-claude)
+  bundle. Porting the actual BLE GATT pairing to this C++ firmware is open
+  work.
 - **Snake** — with an Easy / Normal / Heavy difficulty menu.
 - **Weather** — auto-geolocates via IP, then pulls current conditions plus a
   3-day forecast from [Open-Meteo](https://open-meteo.com/) (no API key
@@ -54,10 +56,16 @@ A Claude-styled launcher with six entries:
 - **Radio** — internet radio over HTTP/HTTPS via libhelix-mp3 + libhelix-aac
   through [`ESP32-audioI2S`](https://github.com/schreibfaul1/ESP32-audioI2S).
   Hard-coded station list (AIDA Radio, Antenne 1 Heilbronn, Antenne Bayern
-  Chillout, Charivari). W/S switches stations, OK toggles play, ←/→ adjusts
-  volume live.
-- **Settings** — Wi-Fi scanner with multi-network persistence, Bluetooth
-  toggle, speaker volume.
+  Chillout, Charivari, Inselradio Mallorca). W/S switches stations, OK toggles
+  play, ←/→ adjusts volume live.
+- **Translator** — voice-to-voice translator. Press OK, speak in the source
+  language, hear the translation in the target language. Whisper transcribes,
+  Claude translates with a translation-only system prompt, OpenAI TTS speaks
+  the result. L swaps source ↔ target. Default direction: DE → EN. Enter
+  also stops the recording manually if you don't want to wait for the VAD.
+- **Settings** — Wi-Fi scanner with multi-network roaming, Bluetooth toggle,
+  speaker volume, display brightness, and an **About** screen with firmware
+  version, free heap, uptime, IP, WiFi RSSI and MAC.
 
 While Claude is busy, the Anthropic spark animates through every state —
 *Understanding…* / *Thinking…* / *Loading speech…* / *Speaking…* — so you

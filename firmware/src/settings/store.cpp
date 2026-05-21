@@ -44,9 +44,10 @@ void load() {
     if (!p.begin(NS, /*readOnly=*/true)) return;
     g_store.wifi_ssid    = p.getString("ssid", "").c_str();
     g_store.wifi_pass    = p.getString("pass", "").c_str();
-    g_store.bluetooth_on = p.getBool("bt", false);
-    g_store.volume_pct   = p.getUChar("vol", 60);
-    g_store.wake_word_on = p.getBool("wake", false);
+    g_store.bluetooth_on   = p.getBool("bt", false);
+    g_store.volume_pct     = p.getUChar("vol", 60);
+    g_store.brightness_pct = p.getUChar("bright", 80);
+    g_store.wake_word_on   = p.getBool("wake", false);
     std::string nets = p.getString("nets", "").c_str();
     p.end();
     deserialize_networks(nets);
@@ -64,6 +65,7 @@ void save() {
     p.putString("pass", g_store.wifi_pass.c_str());
     p.putBool("bt", g_store.bluetooth_on);
     p.putUChar("vol", g_store.volume_pct);
+    p.putUChar("bright", g_store.brightness_pct);
     p.putBool("wake", g_store.wake_word_on);
     p.putString("nets", serialize_networks().c_str());
     p.end();

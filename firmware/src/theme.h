@@ -15,6 +15,7 @@ constexpr uint32_t BLUE       = 0x00FFFF;  // buddy CYAN     — info / listenin
 constexpr uint32_t GREEN      = 0x00FF00;  // buddy GREEN    — approve / success
 constexpr uint32_t MID_GRAY   = 0x777777;  // buddy GRAY_MID — secondary text
 constexpr uint32_t LIGHT_GRAY = 0x333333;  // buddy GRAY_DIM — selected-row backdrop
+constexpr uint32_t YELLOW     = 0xFFD43B;  // transient value-changed indicator
 
 constexpr int SCREEN_W = 240;
 constexpr int SCREEN_H = 135;
