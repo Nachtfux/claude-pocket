@@ -1,0 +1,25 @@
+# Secrets — never publish real keys
+firmware/config.h
+
+# Build artifacts
+.pio/
+.pioenvs/
+build/
+*.bin
+*.elf
+*.o
+
+# pioarduino / ESP-IDF leftover artefacts (the 3.x upgrade attempt
+# scattered these around — they regenerate on build if needed)
+firmware/CMakeLists.txt
+firmware/dependencies.lock
+firmware/managed_components/
+firmware/sdkconfig.defaults
+firmware/sdkconfig.*
+firmware/default_8MB.csv
+firmware/.dummy/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
