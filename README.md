@@ -39,7 +39,7 @@ Claude voice assistant in about ten minutes:
 
 ## What it does
 
-A Claude-styled launcher with four entries:
+A Claude-styled launcher with six entries:
 
 - **Claude Pocket** — the voice assistant. Press OK, speak, the device auto-
   detects when you're done (VAD), transcribes, thinks, and speaks back. The
@@ -48,8 +48,16 @@ A Claude-styled launcher with four entries:
 - **Claude Buddy** — placeholder for the BLE companion port from the *Build
   with Claude* bundle (still a stub).
 - **Snake** — with an Easy / Normal / Heavy difficulty menu.
-- **Settings** — Wi-Fi scanner + password entry, Bluetooth toggle, speaker
-  volume.
+- **Weather** — auto-geolocates via IP, then pulls current conditions plus a
+  3-day forecast from [Open-Meteo](https://open-meteo.com/) (no API key
+  needed). Press R to refresh.
+- **Radio** — internet radio over HTTP/HTTPS via libhelix-mp3 + libhelix-aac
+  through [`ESP32-audioI2S`](https://github.com/schreibfaul1/ESP32-audioI2S).
+  Hard-coded station list (AIDA Radio, Antenne 1 Heilbronn, Antenne Bayern
+  Chillout, Charivari). W/S switches stations, OK toggles play, ←/→ adjusts
+  volume live.
+- **Settings** — Wi-Fi scanner with multi-network persistence, Bluetooth
+  toggle, speaker volume.
 
 While Claude is busy, the Anthropic spark animates through every state —
 *Understanding…* / *Thinking…* / *Loading speech…* / *Speaking…* — so you

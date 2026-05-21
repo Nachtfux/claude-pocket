@@ -22,6 +22,8 @@ constexpr Entry ENTRIES[] = {
     {"Claude Pocket", "Talk to Claude",  app::Screen::POCKET},
     {"Claude Buddy",  "BLE companion",   app::Screen::BUDDY},
     {"Snake",         "Classic",         app::Screen::SNAKE},
+    {"Weather",       "Local forecast",  app::Screen::WEATHER},
+    {"Radio",         "Internet radio",  app::Screen::RADIO},
     {"Settings",      "WiFi, BT, Audio", app::Screen::SETTINGS},
 };
 constexpr int N = sizeof(ENTRIES) / sizeof(ENTRIES[0]);
@@ -50,30 +52,27 @@ void paint_full() {
         g_spark_ready = true;
     }
 
-    // Menu list on the right. Labels at 1.5× — easier to read at arm's
-    // length on the 1.14" display — so row_h jumped from 26 to 32 to fit
-    // label + hint without overlap.
+    // Menu list on the right. 6 entries × 18 px ≈ 108 px fits the content
+    // area; we drop the per-row hint subtitle (which used to live below
+    // the label) to keep the height down — the labels are descriptive
+    // enough on their own once you've used the device once.
     const int list_x = 96;
-    const int row_h  = 32;
-    const int list_y = y0 + 4;
+    const int row_h  = 18;
+    const int list_y = y0 + 2;
 
     for (int i = 0; i < N; ++i) {
         int ry = list_y + i * row_h;
         bool selected = (i == g_sel);
         if (selected) {
-            M5.Display.fillRoundRect(list_x - 4, ry - 2, w - list_x, row_h - 2, 4,
+            M5.Display.fillRoundRect(list_x - 4, ry - 1, w - list_x, row_h - 2, 4,
                                      to565(theme::LIGHT_GRAY));
-            M5.Display.fillRect(list_x - 4, ry - 2, 3, row_h - 2, to565(theme::ORANGE));
+            M5.Display.fillRect(list_x - 4, ry - 1, 3, row_h - 2, to565(theme::ORANGE));
         }
         M5.Display.setTextColor(to565(theme::DARK), selected ? to565(theme::LIGHT_GRAY)
                                                              : to565(theme::IVORY));
-        M5.Display.setTextSize(1.5f);
+        M5.Display.setTextSize(1.4f);
         M5.Display.setTextDatum(top_left);
         M5.Display.drawString(ENTRIES[i].label, list_x + 4, ry);
-        M5.Display.setTextColor(to565(theme::MID_GRAY), selected ? to565(theme::LIGHT_GRAY)
-                                                                 : to565(theme::IVORY));
-        M5.Display.setTextSize(1);
-        M5.Display.drawString(ENTRIES[i].hint, list_x + 4, ry + 16);
     }
 }
 

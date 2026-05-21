@@ -7,6 +7,8 @@ enum class Screen {
     POCKET,
     BUDDY,
     SNAKE,
+    WEATHER,
+    RADIO,
     SETTINGS,
 };
 

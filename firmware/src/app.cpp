@@ -6,7 +6,9 @@
 #include <LittleFS.h>
 
 #include "apps/buddy.h"
+#include "apps/radio.h"
 #include "apps/snake.h"
+#include "apps/weather.h"
 #include "audio/io.h"
 #include "pocket/pocket.h"
 #include "settings/screen.h"
@@ -105,20 +107,24 @@ void loop() {
         M5.Display.fillScreen(M5.Display.color888(0xfa, 0xf9, 0xf5));
         ui::StatusBar::draw(M5.Display);
         switch (g_current) {
-            case Screen::LAUNCHER: ui::Launcher::enter(); break;
-            case Screen::POCKET:   pocket::enter();       break;
-            case Screen::BUDDY:    apps::buddy::enter();  break;
-            case Screen::SNAKE:    apps::snake::enter();  break;
-            case Screen::SETTINGS: settings::enter();     break;
+            case Screen::LAUNCHER: ui::Launcher::enter();  break;
+            case Screen::POCKET:   pocket::enter();        break;
+            case Screen::BUDDY:    apps::buddy::enter();   break;
+            case Screen::SNAKE:    apps::snake::enter();   break;
+            case Screen::WEATHER:  apps::weather::enter(); break;
+            case Screen::RADIO:    apps::radio::enter();   break;
+            case Screen::SETTINGS: settings::enter();      break;
         }
     }
 
     switch (g_current) {
-        case Screen::LAUNCHER: ui::Launcher::tick(); break;
-        case Screen::POCKET:   pocket::tick();       break;
-        case Screen::BUDDY:    apps::buddy::tick();  break;
-        case Screen::SNAKE:    apps::snake::tick();  break;
-        case Screen::SETTINGS: settings::tick();     break;
+        case Screen::LAUNCHER: ui::Launcher::tick();  break;
+        case Screen::POCKET:   pocket::tick();        break;
+        case Screen::BUDDY:    apps::buddy::tick();   break;
+        case Screen::SNAKE:    apps::snake::tick();   break;
+        case Screen::WEATHER:  apps::weather::tick(); break;
+        case Screen::RADIO:    apps::radio::tick();   break;
+        case Screen::SETTINGS: settings::tick();      break;
     }
 
     uint32_t now = millis();
