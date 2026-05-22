@@ -290,6 +290,10 @@ void run_pipeline() {
     g_pcm_pos = 0;
 
     set_state(State::THINKING, "Thinking...");
+    Serial.printf("[pocket] pre-claude heap=%u, text_len=%u, hist=%u\n",
+                  (unsigned)ESP.getFreeHeap(),
+                  (unsigned)text.size(),
+                  (unsigned)g_history_json.size());
 
     auto on_token = [&](const std::string& s) {
         size_t cur = strlen(g_reply);
@@ -304,6 +308,8 @@ void run_pipeline() {
     std::string full = net::claude_stream(text.c_str(), g_history_json,
                                           on_token,
                                           [](const std::string&){});
+    Serial.printf("[pocket] claude returned %u chars, heap=%u\n",
+                  (unsigned)full.size(), (unsigned)ESP.getFreeHeap());
     if (full.empty()) {
         set_state(State::ERROR, "Claude didn't respond");
         return;
@@ -384,6 +390,9 @@ void run_pipeline() {
     }
     audio::stream_end();
     audio::set_stream_tick(nullptr);
+    // Hard-silence both halves of the codec so the amp doesn't keep
+    // emitting low-level hiss between turns.
+    audio::silence_codec();
     set_state(State::IDLE, "OK for next question");
 }
 

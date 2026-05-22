@@ -117,6 +117,13 @@ void begin() {
     // same time; each transition tears one side down before bringing the
     // other up.
     set_volume(settings::store().volume_pct);
+    silence_codec();
+}
+
+void silence_codec() {
+    while (M5.Mic.isRecording())   delay(1);
+    M5.Mic.end();
+    while (M5.Speaker.isPlaying()) delay(1);
     M5.Speaker.end();
 }
 

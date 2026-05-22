@@ -6,6 +6,7 @@
 #include <WiFi.h>
 
 #include "../app.h"
+#include "../audio/io.h"
 #include "../settings/store.h"
 #include "../theme.h"
 
@@ -26,12 +27,26 @@ struct Station {
 // catalogue (de1.api.radio-browser.info). HTTP MP3 where available — the
 // Audio library handles HTTPS+AAC too, but plain HTTP MP3 is friendliest
 // on this no-PSRAM chip. AIDA only publishes an HTTPS AAC stream.
+// AIDA Radio was originally in this list but only ships an HE-AAC stream
+// (with SBR). The libhelix-aac decoder needs ~50 KB of contiguous heap
+// at init, which we don't have after mbedTLS finishes its TLS-1.2
+// handshake. Without PSRAM there's no obvious workaround; tried, OOM'd,
+// removed. If AIDA ever publishes an MP3 mirror we can put it back.
 constexpr Station STATIONS[] = {
-    {"AIDA Radio",            "https://edge11.streamonkey.net/aidaradio-meergefuehl"},
+    // User picks (Germany / DACH)
     {"Antenne 1 Heilbronn",   "http://stream.antenne1.de/a1hn/livestream2.mp3"},
     {"Antenne Bayern Chill",  "http://mp3channels.webradio.antenne.de/chillout"},
     {"Charivari",             "http://rs5.stream24.net/stream"},
     {"Inselradio Mallorca",   "http://inselradiomallorca.stream06.radiohost.de/inselradiomallorca-live_mp3-128"},
+    // Popular worldwide — all MP3 HTTP so the libhelix-mp3 path can decode
+    // them on this no-PSRAM chip. URLs picked from radio-browser's top
+    // click counts and double-checked manually.
+    {"1LIVE",                 "http://wdr-1live-live.icecast.wdr.de/wdr/1live/live/mp3/128/stream.mp3"},
+    {"BBC World Service",     "http://stream.live.vc.bbcmedia.co.uk/bbc_world_service"},
+    {"NPR News",              "http://npr-ice.streamguys1.com/live.mp3"},
+    {"KEXP 90.3 Seattle",     "http://kexp-mp3-128.streamguys1.com/kexp128.mp3"},
+    {"Radio Paradise",        "http://stream.radioparadise.com/mp3-128"},
+    {"SomaFM Groove Salad",   "http://ice1.somafm.com/groovesalad-128-mp3"},
 };
 constexpr int N_STATIONS = sizeof(STATIONS) / sizeof(STATIONS[0]);
 
@@ -52,14 +67,23 @@ uint16_t to565(uint32_t rgb) {
 
 void ensure_codec_configured() {
     if (g_codec_done) return;
-    // M5.Speaker.begin() runs the ES8311's I2C setup (clock + path + gain),
-    // then we release the I2S driver M5 installed so the Audio library can
-    // own the I2S peripheral itself. The codec stays powered through the
-    // hand-off.
+    Serial.printf("[radio] codec setup begin, heap=%u\n",
+                  (unsigned)ESP.getFreeHeap());
+    // Make absolutely sure nobody else still owns the I2S port — Pocket
+    // / Translator might have left M5.Speaker or M5.Mic half-installed
+    // and a second Audio-library install_driver() on the same port
+    // hard-faults the CPU. silence_codec() ends both halves, then we let
+    // M5.Speaker do its I2C codec config one more time and release I2S.
+    audio::silence_codec();
+    delay(50);
     M5.Speaker.begin();
+    delay(20);
     M5.Speaker.end();
+    delay(50);
     g_audio.setPinout(I2S_BCLK, I2S_LRCK, I2S_DOUT);
     g_codec_done = true;
+    Serial.printf("[radio] codec setup done, heap=%u\n",
+                  (unsigned)ESP.getFreeHeap());
 }
 
 void apply_volume() {
@@ -83,7 +107,11 @@ void bump_volume(int delta_pct) {
 void start_current() {
     apply_volume();
     snprintf(g_status_line, sizeof(g_status_line), "Connecting...");
-    g_audio.connecttohost(STATIONS[g_sel].url);
+    Serial.printf("[radio] connecting %s — heap=%u\n",
+                  STATIONS[g_sel].url, (unsigned)ESP.getFreeHeap());
+    bool ok = g_audio.connecttohost(STATIONS[g_sel].url);
+    Serial.printf("[radio] connecttohost returned %d, heap=%u\n",
+                  (int)ok, (unsigned)ESP.getFreeHeap());
     g_playing = true;
 }
 
@@ -156,6 +184,12 @@ void leave() {
         g_playing = false;
     }
     g_status_line[0] = '\0';
+    // stopSong() halts the decoder but leaves the codec + amp powered,
+    // which hisses on the NS4150 side. silence_codec() takes both halves
+    // of the ES8311 down so the speaker is truly quiet on the launcher.
+    audio::silence_codec();
+    // Next time we enter Radio we'll need to reconfigure the codec.
+    g_codec_done = false;
 }
 
 void tick() {

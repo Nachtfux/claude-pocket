@@ -11,6 +11,13 @@ constexpr int      CHANNELS    = 1;
 // Setup mic + speaker through M5Unified's ES8311 driver. Idempotent.
 void begin();
 
+// Tear down both sides of the ES8311 + NS4150 path so the device runs
+// truly silent between sessions. M5.Speaker.end()/M5.Mic.end() each only
+// touch their own half — when something else (like the radio's direct
+// I2S writes) leaves the codec mid-stream, you'll hear a low hiss until
+// this is called.
+void silence_codec();
+
 // Apply the cached settings::store volume.
 void set_volume(uint8_t pct);
 

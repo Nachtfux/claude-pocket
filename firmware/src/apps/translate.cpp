@@ -91,7 +91,7 @@ void paint() {
 
     // Direction pill: "DE → EN" right under the status bar.
     M5.Display.setTextColor(to565(theme::DARK), to565(theme::IVORY));
-    M5.Display.setTextSize(1.6f);
+    M5.Display.setTextSize(1.8f);
     char dir[16];
     snprintf(dir, sizeof(dir), "%s -> %s", LANGS[g_src].label, LANGS[g_dst].label);
     M5.Display.drawString(dir, 8, theme::CONTENT_TOP + 4);
@@ -99,26 +99,26 @@ void paint() {
     // Spark anchor in the corner — same animation hook as the other apps.
     draw_spark(theme::SCREEN_W - 52, theme::CONTENT_TOP + 2);
 
-    // Status line in yellow (matches the transient-feedback convention
-    // we set in the Radio screen).
+    // Status line in yellow — bumped up too so it stays readable next to
+    // the larger hero text.
     M5.Display.setTextColor(to565(theme::YELLOW), to565(theme::IVORY));
-    M5.Display.setTextSize(1);
-    M5.Display.drawString(g_status, 8, theme::CONTENT_TOP + 24);
+    M5.Display.setTextSize(1.2f);
+    M5.Display.drawString(g_status, 8, theme::CONTENT_TOP + 26);
 
-    // Source text (gray, small) and target text (orange, larger).
-    int y = theme::CONTENT_TOP + 38;
+    // Source text (gray, 1.8×) and target text (orange, hero at 2.0×).
+    int y = theme::CONTENT_TOP + 44;
     if (g_source_text[0]) {
         M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
-        M5.Display.setTextSize(1);
+        M5.Display.setTextSize(1.8f);
         M5.Display.drawString(g_source_text, 8, y);
-        y += 14;
+        y += 18;
     }
     if (g_target_text[0]) {
         M5.Display.setTextColor(to565(theme::ORANGE), to565(theme::IVORY));
-        M5.Display.setTextSize(1.6f);
-        // Naive two-line wrap on word boundary. 11 px per glyph at 1.6×.
-        int max_chars = (theme::SCREEN_W - 16) / 11;
-        if (max_chars < 14) max_chars = 14;
+        M5.Display.setTextSize(2.0f);
+        // Naive two-line wrap on word boundary. ~14 px per glyph at 2.0×.
+        int max_chars = (theme::SCREEN_W - 16) / 14;
+        if (max_chars < 12) max_chars = 12;
         std::string s = g_target_text;
         size_t cut = (s.size() > (size_t)max_chars)
                      ? s.rfind(' ', (size_t)max_chars)
@@ -128,7 +128,7 @@ void paint() {
         std::string l2 = cut < s.size() ? s.substr(cut + 1) : std::string();
         if (l2.size() > (size_t)max_chars) l2 = l2.substr(0, max_chars - 1) + "...";
         M5.Display.drawString(l1.c_str(), 8, y);
-        if (!l2.empty()) M5.Display.drawString(l2.c_str(), 8, y + 18);
+        if (!l2.empty()) M5.Display.drawString(l2.c_str(), 8, y + 22);
     }
 
     // Footer hint
@@ -187,6 +187,9 @@ void translate_and_speak() {
 
     set_state(State::TRANSLATING, "Translating...");
     g_target_text[0] = '\0';
+    Serial.printf("[tx] src(%s->%s, %u chars): %.120s\n",
+                  LANGS[g_src].label, LANGS[g_dst].label,
+                  (unsigned)strlen(g_source_text), g_source_text);
 
     auto on_token = [](const std::string& s) {
         size_t cur = strlen(g_target_text);
@@ -199,6 +202,7 @@ void translate_and_speak() {
     std::string full = net::claude_stream(g_source_text, std::string("[]"),
                                           on_token, [](const std::string&){},
                                           sys);
+    Serial.printf("[tx] claude returned %u chars\n", (unsigned)full.size());
     if (full.empty()) {
         set_state(State::ERROR, "Translation failed");
         return;
