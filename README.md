@@ -39,7 +39,7 @@ Claude voice assistant in about ten minutes:
 
 ## What it does
 
-A Claude-styled launcher with seven entries:
+A Claude-styled launcher with eight entries:
 
 - **Claude Pocket** — the voice assistant. Press OK, speak, the device auto-
   detects when you're done (VAD), transcribes, thinks, and speaks back. The
@@ -49,6 +49,15 @@ A Claude-styled launcher with seven entries:
   upstream [build-with-claude](https://github.com/moremas/build-with-claude)
   bundle. Porting the actual BLE GATT pairing to this C++ firmware is open
   work.
+- **Claude Orbit** — a Claude-themed side-scrolling pixel shoot-em-up. Five
+  biomes (STDOUT → STDIN → STAGING → SANDBOX → PROD), each with a distinct
+  enemy mix and a unique boss (REGEX_TYRANT, CONTEXT_OVERFLOW, HALLUCINATION,
+  RATE_LIMITER, ROGUE_TOOL_CALL). Hold K (or SPACE) for auto-fire, L to
+  detach the Force-style pod, pick up `cache hit ✦` for a visible blue
+  shield + power bullets, `/clear` to bomb the screen. Survive past PROD and
+  the loop restarts with escalating difficulty (×1.2, ×1.45, ×1.75, …,
+  capped at ×2.5). Highscore persists in NVS. See
+  [`src/apps/orbit*`](firmware/src/apps/) for the implementation.
 - **Snake** — with an Easy / Normal / Heavy difficulty menu.
 - **Weather** — auto-geolocates via IP, then pulls current conditions plus a
   3-day forecast from [Open-Meteo](https://open-meteo.com/) (no API key
