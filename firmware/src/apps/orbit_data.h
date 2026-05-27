@@ -1,6 +1,6 @@
 #pragma once
 
-// claude-orbit: static data tables.
+// orbit-fighter: static data tables.
 //
 // This file declares the enum IDs, POD structs, and lookup functions for
 // every "design-time" value the shoot-em-up needs: enemy stats, bosses,

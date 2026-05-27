@@ -49,7 +49,7 @@ A Claude-styled launcher with eight entries:
   upstream [build-with-claude](https://github.com/moremas/build-with-claude)
   bundle. Porting the actual BLE GATT pairing to this C++ firmware is open
   work.
-- **Claude Orbit** — a Claude-themed side-scrolling pixel shoot-em-up. Five
+- **Orbit Fighter** — a Claude-themed side-scrolling pixel shoot-em-up. Five
   biomes (STDOUT → STDIN → STAGING → SANDBOX → PROD), each with a distinct
   enemy mix and a unique boss (REGEX_TYRANT, CONTEXT_OVERFLOW, HALLUCINATION,
   RATE_LIMITER, ROGUE_TOOL_CALL). Hold K (or SPACE) for auto-fire, L to

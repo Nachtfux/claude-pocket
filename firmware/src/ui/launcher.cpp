@@ -24,7 +24,7 @@ struct Entry {
 constexpr Entry ENTRIES[] = {
     {"Claude Buddy",  "BLE companion",   app::Screen::BUDDY},
     {"Claude Pocket", "Talk to Claude",  app::Screen::POCKET},
-    {"Claude Orbit",  "Pixel shmup",     app::Screen::ORBIT},
+    {"Orbit Fighter",  "Pixel shmup",     app::Screen::ORBIT},
     {"Radio",         "Internet radio",  app::Screen::RADIO},
     {"Snake",         "Classic",         app::Screen::SNAKE},
     {"Translator",    "Voice translate", app::Screen::TRANSLATE},

@@ -387,7 +387,7 @@ void draw_hud() {
     d.fillRect(4, HUD_Y + 5, 4, 4, orange);
     d.fillRect(3, HUD_Y + 6, 6, 2, orange);
     d.setTextColor(cream, bg);
-    d.drawString("Claude Orbit", 14, HUD_Y + 4);
+    d.drawString("Orbit Fighter", 14, HUD_Y + 4);
 
     // Stage centered
     const char* biome_label = data::biome_config(g_biome).label;

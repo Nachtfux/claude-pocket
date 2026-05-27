@@ -1,6 +1,6 @@
 #pragma once
 
-// claude-orbit sprite atlas
+// orbit-fighter sprite atlas
 // ----------------------------------------------------------------------------
 // Tiny palette-indexed pixel-art atlas for the R-Type sub-app. All bitmap
 // data lives in flash (static constexpr arrays). Each byte in a bitmap is a

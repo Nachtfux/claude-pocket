@@ -4,7 +4,7 @@
 
 #include "../theme.h"
 
-// claude-orbit sprite atlas — implementation.
+// orbit-fighter sprite atlas — implementation.
 //
 // Each sprite is a row-major constexpr array of palette indices (one byte
 // per pixel). `static constexpr` arrays at namespace scope are placed in

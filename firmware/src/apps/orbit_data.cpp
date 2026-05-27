@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-// claude-orbit: data tables (definitions).
+// orbit-fighter: data tables (definitions).
 //
 // All large arrays are `static constexpr` so they end up in flash on the
 // ESP32-S3 (the Cardputer ADV's MCU) without needing PSRAM. The lookup

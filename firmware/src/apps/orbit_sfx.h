@@ -1,6 +1,6 @@
 #pragma once
 
-// Pure-synth sound effects for claude-orbit. All entry points are
+// Pure-synth sound effects for orbit-fighter. All entry points are
 // non-blocking: they enqueue tones into M5.Speaker's channel mixer and
 // return immediately. The non-blocking charge-build sweep is advanced
 // by repeated calls to tick() from the game's main loop — no delay()
