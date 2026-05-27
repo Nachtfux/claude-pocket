@@ -34,10 +34,20 @@ constexpr Entry ENTRIES[] = {
 constexpr int N = sizeof(ENTRIES) / sizeof(ENTRIES[0]);
 
 int g_sel = 0;
+int g_scroll = 0;          // index of the topmost visible entry
+constexpr int VISIBLE_ROWS = 7;
 float g_spark_phase = 0.0f;
 uint32_t g_last_anim_ms = 0;
 M5Canvas g_spark_canvas(&M5.Display);
 bool g_spark_ready = false;
+
+void clamp_scroll() {
+    if (N <= VISIBLE_ROWS) { g_scroll = 0; return; }
+    if (g_sel < g_scroll) g_scroll = g_sel;
+    else if (g_sel >= g_scroll + VISIBLE_ROWS) g_scroll = g_sel - VISIBLE_ROWS + 1;
+    if (g_scroll < 0) g_scroll = 0;
+    if (g_scroll > N - VISIBLE_ROWS) g_scroll = N - VISIBLE_ROWS;
+}
 
 uint16_t to565(uint32_t rgb) {
     return M5.Display.color565((rgb >> 16) & 0xff, (rgb >> 8) & 0xff, rgb & 0xff);
@@ -57,15 +67,20 @@ void paint_full() {
         g_spark_ready = true;
     }
 
-    // Menu list on the right. 7 entries × 17 px = 119 px fits the content
-    // area exactly. Labels at 1.6× — bigger than the old 1.2× so the
-    // menu reads cleanly at arm's length without scrolling.
+    // Menu list on the right. Now scrolls: VISIBLE_ROWS entries shown at
+    // once at row_h = 17 px (7 × 17 = 119, fits the 121-px content area).
+    // When the cursor moves past the bottom of the viewport, g_scroll
+    // increments and the list scrolls one row up. Up-arrows are drawn at
+    // the top/bottom of the visible window when entries exist above/below.
     const int list_x = 96;
     const int row_h  = 17;
-    const int list_y = y0 + 2;
+    const int list_y = y0 + 1;
 
-    for (int i = 0; i < N; ++i) {
-        int ry = list_y + i * row_h;
+    clamp_scroll();
+    int last = g_scroll + VISIBLE_ROWS;
+    if (last > N) last = N;
+    for (int i = g_scroll; i < last; ++i) {
+        int ry = list_y + (i - g_scroll) * row_h;
         bool selected = (i == g_sel);
         if (selected) {
             M5.Display.fillRoundRect(list_x - 4, ry - 1, w - list_x, row_h - 2, 4,
@@ -77,6 +92,20 @@ void paint_full() {
         M5.Display.setTextSize(1.6f);
         M5.Display.setTextDatum(top_left);
         M5.Display.drawString(ENTRIES[i].label, list_x + 4, ry);
+    }
+
+    // Scroll-position indicators — small triangles in the dim gutter on the
+    // right edge of the menu so the user knows there's more above / below.
+    const uint16_t dim = to565(theme::MID_GRAY);
+    if (g_scroll > 0) {
+        int tx = w - 6;
+        int ty = list_y + 2;
+        M5.Display.fillTriangle(tx, ty + 4, tx + 4, ty + 4, tx + 2, ty, dim);
+    }
+    if (g_scroll + VISIBLE_ROWS < N) {
+        int tx = w - 6;
+        int ty = list_y + VISIBLE_ROWS * row_h - 6;
+        M5.Display.fillTriangle(tx, ty, tx + 4, ty, tx + 2, ty + 4, dim);
     }
 }
 
