@@ -161,6 +161,12 @@ bool tts_to_file(const char* text, const char* file_path, size_t* out_bytes,
     req["voice"] = TTS_VOICE;
     req["input"] = text;
     req["response_format"] = TTS_FORMAT;
+    // Slightly faster delivery — Claude's 120-token budget can verbalize as
+    // ~35 s of speech which overruns the 1.5 MB LittleFS partition mid-
+    // sentence. At speed=1.2 the same 35 s of normal-pace audio fits in
+    // ~29 s, comfortably inside the ~31 s cap, and the voice is still
+    // perfectly natural.
+    req["speed"] = 1.2;
     std::string body;
     serializeJson(req, body);
 
