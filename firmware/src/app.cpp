@@ -7,6 +7,7 @@
 
 #include "apps/buddy.h"
 #include "apps/radio.h"
+#include "apps/rtype.h"
 #include "apps/snake.h"
 #include "apps/translate.h"
 #include "apps/weather.h"
@@ -128,6 +129,7 @@ void loop() {
             case Screen::POCKET:    pocket::enter();          break;
             case Screen::BUDDY:     apps::buddy::enter();     break;
             case Screen::SNAKE:     apps::snake::enter();     break;
+            case Screen::RTYPE:     apps::rtype::enter();     break;
             case Screen::WEATHER:   apps::weather::enter();   break;
             case Screen::RADIO:     apps::radio::enter();     break;
             case Screen::TRANSLATE: apps::translate::enter(); break;
@@ -140,6 +142,7 @@ void loop() {
         case Screen::POCKET:    pocket::tick();          break;
         case Screen::BUDDY:     apps::buddy::tick();     break;
         case Screen::SNAKE:     apps::snake::tick();     break;
+        case Screen::RTYPE:     apps::rtype::tick();     break;
         case Screen::WEATHER:   apps::weather::tick();   break;
         case Screen::RADIO:     apps::radio::tick();     break;
         case Screen::TRANSLATE: apps::translate::tick(); break;

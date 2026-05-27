@@ -18,13 +18,17 @@ struct Entry {
     app::Screen target;
 };
 
+// Alphabetical, with Settings pinned to the end as a "utilities last"
+// convention — the everyday apps are at the top so the cursor lands on
+// one of them after a fresh boot.
 constexpr Entry ENTRIES[] = {
-    {"Claude Pocket", "Talk to Claude",  app::Screen::POCKET},
     {"Claude Buddy",  "BLE companion",   app::Screen::BUDDY},
-    {"Snake",         "Classic",         app::Screen::SNAKE},
-    {"Weather",       "Local forecast",  app::Screen::WEATHER},
+    {"Claude Pocket", "Talk to Claude",  app::Screen::POCKET},
+    {"Claude Orbit",  "Pixel shmup",     app::Screen::RTYPE},
     {"Radio",         "Internet radio",  app::Screen::RADIO},
+    {"Snake",         "Classic",         app::Screen::SNAKE},
     {"Translator",    "Voice translate", app::Screen::TRANSLATE},
+    {"Weather",       "Local forecast",  app::Screen::WEATHER},
     {"Settings",      "WiFi, BT, Audio", app::Screen::SETTINGS},
 };
 constexpr int N = sizeof(ENTRIES) / sizeof(ENTRIES[0]);
