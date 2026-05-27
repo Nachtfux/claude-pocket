@@ -7,6 +7,7 @@
 
 #include "../../config.h"
 #include "../audio/wav.h"
+#include "../keys.h"
 #include "http.h"
 
 namespace net {
@@ -66,7 +67,7 @@ std::string transcribe(const char* path, size_t sample_count) {
     snprintf(headers, sizeof(headers),
              "Authorization: Bearer %s\r\n"
              "Content-Type: multipart/form-data; boundary=%s\r\n",
-             OPENAI_API_KEY, BOUNDARY);
+             app::keys::openai_key(), BOUNDARY);
 
     std::string body;
     body.reserve(2048);
@@ -180,7 +181,7 @@ bool tts_to_file(const char* text, const char* file_path, size_t* out_bytes,
              "Content-Length: %u\r\n"
              "Connection: close\r\n"
              "\r\n",
-             OPENAI_API_KEY, (unsigned)body.size());
+             app::keys::openai_key(), (unsigned)body.size());
     size_t written = 0;
     while (written < body.size()) {
         size_t w = c.write((const uint8_t*)body.data() + written,

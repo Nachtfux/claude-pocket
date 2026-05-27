@@ -12,6 +12,7 @@
 #include "apps/translate.h"
 #include "apps/weather.h"
 #include "audio/io.h"
+#include "keys.h"
 #include "pocket/pocket.h"
 #include "settings/screen.h"
 #include "settings/store.h"
@@ -37,6 +38,12 @@ void init() {
     // brightness and the fill color.
     M5.Display.setBrightness(180);
     M5.Display.fillScreen(M5.Display.color888(0x1f, 0x1f, 0x1f));
+
+    // Burner-ready key import — DISABLED PENDING DEBUG. The SD.begin()
+    // call appears to hang the boot on Cardputer-Adv (likely a pin
+    // mismatch — the Adv may not share SD pins with the base Cardputer).
+    // Re-enable once we've verified the correct GPIO mapping for SD/TF.
+    // keys::import_from_sd();
 
     settings::load();
     // Apply persisted display brightness immediately so the splash screen

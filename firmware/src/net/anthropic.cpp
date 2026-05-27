@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 
 #include "../../config.h"
+#include "../keys.h"
 #include "http.h"
 
 namespace net {
@@ -60,7 +61,7 @@ std::string claude_stream(const char* user_text,
              "anthropic-version: 2023-06-01\r\n"
              "Content-Type: application/json\r\n"
              "Accept: text/event-stream\r\n",
-             ANTHROPIC_API_KEY);
+             app::keys::anthropic_key());
 
     std::string full_reply;
     std::string sentence_buf;
