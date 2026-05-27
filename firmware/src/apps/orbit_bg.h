@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 namespace apps {
-namespace rtype {
+namespace orbit {
 namespace bg {
 
 // Biome IDs (palette + density tweaks):
@@ -46,5 +46,5 @@ void fx_spawn_sparkle(int16_t x, int16_t y);
 void fx_tick();
 
 }  // namespace bg
-}  // namespace rtype
+}  // namespace orbit
 }  // namespace apps

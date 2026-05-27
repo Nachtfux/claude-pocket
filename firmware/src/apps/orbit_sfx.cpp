@@ -1,10 +1,10 @@
-#include "rtype_sfx.h"
+#include "orbit_sfx.h"
 
 #include <M5Unified.h>
 #include <stdlib.h>
 
 namespace apps {
-namespace rtype {
+namespace orbit {
 namespace sfx {
 
 namespace {
@@ -282,5 +282,5 @@ void tick() {
 }
 
 }  // namespace sfx
-}  // namespace rtype
+}  // namespace orbit
 }  // namespace apps

@@ -1,19 +1,19 @@
 #pragma once
 
-// claude-rtype: static data tables.
+// claude-orbit: static data tables.
 //
 // This file declares the enum IDs, POD structs, and lookup functions for
 // every "design-time" value the shoot-em-up needs: enemy stats, bosses,
 // biome spawn timelines, powerup weights, and the loop-difficulty curve.
 //
 // All tables live in flash (PROGMEM / static constexpr arrays); no PSRAM
-// is required. Implementation lives in rtype_data.cpp.
+// is required. Implementation lives in orbit_data.cpp.
 
 #include <stddef.h>
 #include <stdint.h>
 
 namespace apps {
-namespace rtype {
+namespace orbit {
 namespace data {
 
 // ---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ enum class PowerupId : uint8_t {
 };
 
 // Movement patterns the runtime understands. The data layer just tags an
-// enemy with one of these; rtype.cpp decides what it actually means.
+// enemy with one of these; orbit.cpp decides what it actually means.
 //   0 = linear            : march left at speed_x
 //   1 = sine_y            : linear x, sinusoidal y
 //   2 = track_player_slow : home toward player at speed_x magnitude
@@ -142,5 +142,5 @@ int      loop_difficulty_multiplier(int loop_number);
 PowerupId pick_random_powerup();
 
 }  // namespace data
-}  // namespace rtype
+}  // namespace orbit
 }  // namespace apps

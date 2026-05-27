@@ -1,10 +1,10 @@
 #pragma once
 
-// claude-rtype sprite atlas
+// claude-orbit sprite atlas
 // ----------------------------------------------------------------------------
 // Tiny palette-indexed pixel-art atlas for the R-Type sub-app. All bitmap
 // data lives in flash (static constexpr arrays). Each byte in a bitmap is a
-// palette index into the table defined in rtype_sprites.cpp:
+// palette index into the table defined in orbit_sprites.cpp:
 //
 //   0  transparent (pixel not drawn)
 //   1  cream / DARK     (0xF0EEE6)
@@ -23,7 +23,7 @@
 #include <stdint.h>
 
 namespace apps {
-namespace rtype {
+namespace orbit {
 
 enum class SpriteId : uint8_t {
     // Player ship (16x8)
@@ -78,5 +78,5 @@ void draw_sprite(int16_t x, int16_t y, SpriteId id);
 int sprite_w(SpriteId id);
 int sprite_h(SpriteId id);
 
-}  // namespace rtype
+}  // namespace orbit
 }  // namespace apps

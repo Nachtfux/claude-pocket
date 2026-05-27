@@ -1,4 +1,4 @@
-#include "rtype.h"
+#include "orbit.h"
 
 #include <M5Cardputer.h>
 #include <M5Unified.h>
@@ -10,13 +10,13 @@
 
 #include "../app.h"
 #include "../theme.h"
-#include "rtype_bg.h"
-#include "rtype_data.h"
-#include "rtype_sfx.h"
-#include "rtype_sprites.h"
+#include "orbit_bg.h"
+#include "orbit_data.h"
+#include "orbit_sfx.h"
+#include "orbit_sprites.h"
 
 namespace apps {
-namespace rtype {
+namespace orbit {
 
 namespace {
 
@@ -24,7 +24,7 @@ namespace {
 // Layout constants. The global status bar at y=0..13 is owned by app.cpp; we
 // only ever draw inside [CONTENT_TOP .. SCREEN_H-1]. The HUD lives in a
 // 16 px chrome band right under it, footer is the bottom 14 px, and the rest
-// is the playfield. These match the values rtype_bg.cpp scrolls inside of.
+// is the playfield. These match the values orbit_bg.cpp scrolls inside of.
 constexpr int HUD_Y      = theme::CONTENT_TOP;
 constexpr int HUD_H      = 16;
 constexpr int FIELD_X0   = 2;
@@ -271,7 +271,7 @@ bool g_down_prev  = false;   // s / .
 uint32_t g_last_move_ms = 0;
 
 // NVS persistence — same Preferences API as settings/store.cpp.
-constexpr const char* NVS_NS = "rtype";
+constexpr const char* NVS_NS = "orbit";
 
 uint16_t to565(uint32_t rgb) {
     return M5.Display.color565((rgb >> 16) & 0xff, (rgb >> 8) & 0xff, rgb & 0xff);
@@ -2550,5 +2550,5 @@ void tick() {
     sfx::tick();
 }
 
-}  // namespace rtype
+}  // namespace orbit
 }  // namespace apps

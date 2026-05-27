@@ -1,4 +1,4 @@
-#include "rtype_bg.h"
+#include "orbit_bg.h"
 
 #include <M5Unified.h>
 #include <stdint.h>
@@ -8,13 +8,13 @@
 #include "../theme.h"
 
 namespace apps {
-namespace rtype {
+namespace orbit {
 namespace bg {
 
 namespace {
 
 // -----------------------------------------------------------------------
-// Playfield bounds — must match rtype.cpp exactly. Background never draws
+// Playfield bounds — must match orbit.cpp exactly. Background never draws
 // outside this rect.
 // -----------------------------------------------------------------------
 constexpr int FIELD_X0 = 2;
@@ -543,5 +543,5 @@ void fx_tick() {
 }
 
 }  // namespace bg
-}  // namespace rtype
+}  // namespace orbit
 }  // namespace apps

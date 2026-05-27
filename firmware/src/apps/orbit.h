@@ -1,10 +1,10 @@
 #pragma once
 
 namespace apps {
-namespace rtype {
+namespace orbit {
 
 void enter();
 void tick();
 
-}  // namespace rtype
+}  // namespace orbit
 }  // namespace apps

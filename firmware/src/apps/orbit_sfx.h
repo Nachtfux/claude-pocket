@@ -1,6 +1,6 @@
 #pragma once
 
-// Pure-synth sound effects for claude-rtype. All entry points are
+// Pure-synth sound effects for claude-orbit. All entry points are
 // non-blocking: they enqueue tones into M5.Speaker's channel mixer and
 // return immediately. The non-blocking charge-build sweep is advanced
 // by repeated calls to tick() from the game's main loop — no delay()
@@ -19,7 +19,7 @@
 // Static state stays well under 1 KB (a handful of u32s + bool).
 
 namespace apps {
-namespace rtype {
+namespace orbit {
 namespace sfx {
 
 void play_fire();
@@ -56,5 +56,5 @@ void tick();
 void stop_all();
 
 }  // namespace sfx
-}  // namespace rtype
+}  // namespace orbit
 }  // namespace apps

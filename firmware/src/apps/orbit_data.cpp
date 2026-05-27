@@ -1,21 +1,21 @@
-#include "rtype_data.h"
+#include "orbit_data.h"
 
 #include <stdlib.h>
 
-// claude-rtype: data tables (definitions).
+// claude-orbit: data tables (definitions).
 //
 // All large arrays are `static constexpr` so they end up in flash on the
 // ESP32-S3 (the Cardputer ADV's MCU) without needing PSRAM. The lookup
 // functions are thin index-bounded accessors; they never allocate.
 
 namespace apps {
-namespace rtype {
+namespace orbit {
 namespace data {
 
 namespace {
 
 // ---------------------------------------------------------------------------
-// Playfield reminders (sourced from rtype.cpp; kept here as comments so
+// Playfield reminders (sourced from orbit.cpp; kept here as comments so
 // the spawn y values below are easy to sanity-check):
 //   FIELD_X0 =   2   FIELD_X1 = 238
 //   FIELD_Y0 =  30   FIELD_Y1 = 121     usable height = 91 px
@@ -329,5 +329,5 @@ PowerupId pick_random_powerup() {
 }
 
 }  // namespace data
-}  // namespace rtype
+}  // namespace orbit
 }  // namespace apps

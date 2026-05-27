@@ -7,7 +7,7 @@ enum class Screen {
     POCKET,
     BUDDY,
     SNAKE,
-    RTYPE,
+    ORBIT,
     WEATHER,
     RADIO,
     TRANSLATE,

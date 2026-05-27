@@ -1,10 +1,10 @@
-#include "rtype_sprites.h"
+#include "orbit_sprites.h"
 
 #include <M5Unified.h>
 
 #include "../theme.h"
 
-// claude-rtype sprite atlas — implementation.
+// claude-orbit sprite atlas — implementation.
 //
 // Each sprite is a row-major constexpr array of palette indices (one byte
 // per pixel). `static constexpr` arrays at namespace scope are placed in
@@ -19,7 +19,7 @@
 // us well within the 30 fps budget even with ~20 active sprites.
 
 namespace apps {
-namespace rtype {
+namespace orbit {
 
 namespace {
 
@@ -803,5 +803,5 @@ void draw_sprite(int16_t x, int16_t y, SpriteId id) {
     }
 }
 
-}  // namespace rtype
+}  // namespace orbit
 }  // namespace apps
