@@ -1365,6 +1365,35 @@ void on_boss_killed() {
 // Runs after the STAGE_CLEARED modal expires. This is the second half of
 // the old on_boss_killed flow — separated so we can pause for celebration.
 void advance_to_next_biome() {
+    // Defensive scrub before re-entering PLAYING. The user reported total
+    // freezes immediately after a boss kill — most likely candidates are
+    // (a) stale bullets / enemies / minis still mid-update logic and (b) a
+    // saturated SFX channel queue from the boss-death + level-complete
+    // fanfare. Clear both.
+    sfx::stop_all();
+    for (int i = 0; i < MAX_ENEMIES; ++i) {
+        if (g_enemies[i].prev_drawn) {
+            int sw = sprite_w(enemy_sprite(g_enemies[i].id));
+            int sh = sprite_h(enemy_sprite(g_enemies[i].id));
+            erase_rect(g_enemies[i].prev_x, g_enemies[i].prev_y, sw, sh);
+        }
+        g_enemies[i].active = false;
+        g_enemies[i].prev_drawn = false;
+    }
+    for (int i = 0; i < MAX_PLAYER_BULLET; ++i) g_pbul[i].active = false;
+    for (int i = 0; i < MAX_PLAYER_BULLET; ++i) g_pbul[i].prev_drawn = false;
+    for (int i = 0; i < MAX_ENEMY_BULLET; ++i)  g_ebul[i].active = false;
+    for (int i = 0; i < MAX_ENEMY_BULLET; ++i)  g_ebul[i].prev_drawn = false;
+    for (int i = 0; i < MAX_MINIS; ++i) {
+        g_minis[i].active = false;
+        g_minis[i].prev_drawn = false;
+    }
+    g_split_active = false;
+    g_rate_throttle_active   = false;
+    g_rate_throttle_until_ms = 0;
+    g_rate_next_throttle_ms  = 0;
+    g_hallu_flash_until_ms   = 0;
+
     // Transition to next biome (loop if we wrapped from PROD).
     data::BiomeId next = data::next_biome(g_biome);
     if (next == data::BiomeId::STDOUT && g_biome == data::BiomeId::PROD) {
