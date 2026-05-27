@@ -39,11 +39,13 @@ void init() {
     M5.Display.setBrightness(180);
     M5.Display.fillScreen(M5.Display.color888(0x1f, 0x1f, 0x1f));
 
-    // Burner-ready key import — DISABLED PENDING DEBUG. The SD.begin()
-    // call appears to hang the boot on Cardputer-Adv (likely a pin
-    // mismatch — the Adv may not share SD pins with the base Cardputer).
-    // Re-enable once we've verified the correct GPIO mapping for SD/TF.
-    // keys::import_from_sd();
+    // Burner-ready key import: check microSD card for /keys.txt and merge
+    // any KEY=VALUE entries into NVS. Pin set verified against
+    // M5Unified::_pin_table_spi_sd; rewritten to use the default SPI bus
+    // (the earlier HSPI variant hung at boot due to a bus-claim conflict
+    // with the display SPI). Safe to call unconditionally — no card or
+    // mount failure → silent no-op.
+    keys::import_from_sd();
 
     settings::load();
     // Apply persisted display brightness immediately so the splash screen

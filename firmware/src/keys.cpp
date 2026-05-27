@@ -113,13 +113,20 @@ bool apply_line(const String& raw, Preferences& p) {
 }  // namespace
 
 int import_from_sd() {
-    SPIClass spi(HSPI);
-    spi.begin(SD_PIN_SCK, SD_PIN_MISO, SD_PIN_MOSI, SD_PIN_CS);
-
-    if (!SD.begin(SD_PIN_CS, spi, 4000000)) {
+    // Pin set verified against M5Unified::_pin_table_spi_sd (the canonical
+    // source — same line for board_M5CardputerADV). The earlier `SPIClass
+    // spi(HSPI)` variant hung at boot, almost certainly a bus-claim conflict
+    // with M5GFX's display SPI on the same host. Standard pattern: configure
+    // the default `SPI` bus on our pins, hand it to SD.begin() at a
+    // conservative clock — that's what M5Stack's own examples do.
+    Serial.println("[keys] mounting SD...");
+    SPI.begin(SD_PIN_SCK, SD_PIN_MISO, SD_PIN_MOSI, SD_PIN_CS);
+    if (!SD.begin(SD_PIN_CS, SPI, 1000000)) {
         Serial.println("[keys] no SD card or mount failed — skipping import");
+        SPI.end();
         return 0;
     }
+    Serial.println("[keys] SD mounted");
     if (!SD.exists(KEYS_PATH)) {
         Serial.println("[keys] SD mounted but /keys.txt not present — skipping");
         SD.end();
@@ -150,6 +157,7 @@ int import_from_sd() {
     f.close();
     SD.end();
 
+    SPI.end();
     Serial.printf("[keys] imported %d field(s) from /keys.txt\n", applied);
     // Re-read into cache so the rest of boot picks up the new values.
     reload();

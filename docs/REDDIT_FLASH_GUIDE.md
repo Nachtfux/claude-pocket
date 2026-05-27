@@ -45,7 +45,22 @@ Claude Pocket / Translator / Claude Buddy need:
 - `ANTHROPIC_API_KEY` from [console.anthropic.com](https://console.anthropic.com)
 - `OPENAI_API_KEY` from [platform.openai.com](https://platform.openai.com)
 
-Right now the only way to add these is by building from source with your own `config.h`:
+**Easiest way — `keys.txt` on microSD card:**
+
+Create a file `keys.txt` at the root of a microSD card:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-proj-...
+
+# Optional, pre-populates the Settings menu:
+WIFI_SSID=MyNetwork
+WIFI_PASS=mypassword
+```
+
+Insert the card, power-cycle the Cardputer. On boot the device imports the keys into NVS — you can remove the card afterwards, the values persist.
+
+**Alternative — build from source** with your own `config.h`:
 
 ```bash
 git clone https://github.com/Nachtfux/claude-pocket
@@ -55,8 +70,6 @@ pio run -e m5cardputer-adv -t upload
 ```
 
 `config.h` is git-ignored, your keys never leave your machine.
-
-On-device key entry (Settings menu typing + SD-card `/keys.txt`) is in the works — see [`docs/BURNER.md`](BURNER.md) for the roadmap.
 
 ## Troubleshooting
 

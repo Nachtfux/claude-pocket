@@ -58,13 +58,11 @@ You need:
 - `ANTHROPIC_API_KEY` (from [console.anthropic.com](https://console.anthropic.com/))
 - `OPENAI_API_KEY`    (from [platform.openai.com](https://platform.openai.com/))
 
-### Method 1 — SD card `/keys.txt` (planned; currently disabled)
+### Method 1 — SD card `/keys.txt` (recommended, works now)
 
-> **Status:** scaffolded in `src/keys.cpp` (`import_from_sd()`), but the
-> `app::init()` hook is commented out pending verification of the
-> Cardputer-Adv SD-card GPIO mapping. Re-enabled in a near-future release.
-
-When enabled, drop a `keys.txt` file onto the microSD card at the root:
+Drop a `keys.txt` file onto the microSD card at the root. Boot the
+Cardputer once with the card inserted — the device imports into NVS and
+you can remove the card.
 
 ```
 # /keys.txt
