@@ -6,7 +6,25 @@
 #include <SPI.h>
 #include <WString.h>
 
-#include "../config.h"
+// Burner builds (pio run -e m5cardputer-adv-burner) intentionally ship
+// with NO compile-time API keys — the binary that lands in M5Burner must
+// be free of any developer's secrets. Empty fallbacks force the user to
+// populate NVS via SD-card import / Settings UI / Wi-Fi setup.
+//
+// Dev builds (default env) include config.h as before so the existing
+// "fill in config.h, flash, go" workflow keeps working unchanged.
+#ifdef BURNER_BUILD
+#  define FALLBACK_ANTHROPIC_API_KEY ""
+#  define FALLBACK_OPENAI_API_KEY    ""
+#  define FALLBACK_WIFI_SSID         ""
+#  define FALLBACK_WIFI_PASS         ""
+#else
+#  include "../config.h"
+#  define FALLBACK_ANTHROPIC_API_KEY ANTHROPIC_API_KEY
+#  define FALLBACK_OPENAI_API_KEY    OPENAI_API_KEY
+#  define FALLBACK_WIFI_SSID         DEFAULT_WIFI_SSID
+#  define FALLBACK_WIFI_PASS         DEFAULT_WIFI_PASS
+#endif
 
 namespace app {
 namespace keys {
@@ -145,22 +163,22 @@ void reload() {
 
 const char* anthropic_key() {
     if (!g_loaded) load_from_nvs();
-    return g_anthropic.length() > 0 ? g_anthropic.c_str() : ANTHROPIC_API_KEY;
+    return g_anthropic.length() > 0 ? g_anthropic.c_str() : FALLBACK_ANTHROPIC_API_KEY;
 }
 
 const char* openai_key() {
     if (!g_loaded) load_from_nvs();
-    return g_openai.length() > 0 ? g_openai.c_str() : OPENAI_API_KEY;
+    return g_openai.length() > 0 ? g_openai.c_str() : FALLBACK_OPENAI_API_KEY;
 }
 
 const char* wifi_ssid() {
     if (!g_loaded) load_from_nvs();
-    return g_wifi_ssid.length() > 0 ? g_wifi_ssid.c_str() : DEFAULT_WIFI_SSID;
+    return g_wifi_ssid.length() > 0 ? g_wifi_ssid.c_str() : FALLBACK_WIFI_SSID;
 }
 
 const char* wifi_pass() {
     if (!g_loaded) load_from_nvs();
-    return g_wifi_pass.length() > 0 ? g_wifi_pass.c_str() : DEFAULT_WIFI_PASS;
+    return g_wifi_pass.length() > 0 ? g_wifi_pass.c_str() : FALLBACK_WIFI_PASS;
 }
 
 }  // namespace keys

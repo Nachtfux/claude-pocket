@@ -23,3 +23,7 @@ firmware/.dummy/
 .vscode/
 .idea/
 .DS_Store
+
+# Built binaries — distribute via GitHub Releases, not git history.
+dist/
+*.bin
