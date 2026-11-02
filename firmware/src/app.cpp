@@ -5,7 +5,11 @@
 #include <WiFi.h>
 #include <LittleFS.h>
 
+#include "apps/blekbd.h"
 #include "apps/buddy.h"
+#include "apps/irprank.h"
+#include "apps/irremote.h"
+#include "apps/liedetect.h"
 #include "apps/radio.h"
 #include "apps/orbit.h"
 #include "apps/snake.h"
@@ -137,6 +141,10 @@ void loop() {
             case Screen::LAUNCHER:  ui::Launcher::enter();    break;
             case Screen::POCKET:    pocket::enter();          break;
             case Screen::BUDDY:     apps::buddy::enter();     break;
+            case Screen::BLEKBD:    apps::blekbd::enter();    break;
+            case Screen::IRPRANK:   apps::irprank::enter();   break;
+            case Screen::IRREMOTE:  apps::irremote::enter();  break;
+            case Screen::LIEDETECT: apps::liedetect::enter(); break;
             case Screen::SNAKE:     apps::snake::enter();     break;
             case Screen::ORBIT:     apps::orbit::enter();     break;
             case Screen::WEATHER:   apps::weather::enter();   break;
@@ -150,6 +158,10 @@ void loop() {
         case Screen::LAUNCHER:  ui::Launcher::tick();    break;
         case Screen::POCKET:    pocket::tick();          break;
         case Screen::BUDDY:     apps::buddy::tick();     break;
+        case Screen::BLEKBD:    apps::blekbd::tick();    break;
+        case Screen::IRPRANK:   apps::irprank::tick();   break;
+        case Screen::IRREMOTE:  apps::irremote::tick();  break;
+        case Screen::LIEDETECT: apps::liedetect::tick(); break;
         case Screen::SNAKE:     apps::snake::tick();     break;
         case Screen::ORBIT:     apps::orbit::tick();     break;
         case Screen::WEATHER:   apps::weather::tick();   break;

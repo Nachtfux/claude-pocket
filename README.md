@@ -39,7 +39,7 @@ Claude voice assistant in about ten minutes:
 
 ## What it does
 
-A Claude-styled launcher with eight entries:
+A Claude-styled launcher with twelve entries:
 
 - **Claude Pocket** — the voice assistant. Press OK, speak, the device auto-
   detects when you're done (VAD), transcribes, thinks, and speaks back. The
@@ -49,6 +49,32 @@ A Claude-styled launcher with eight entries:
   upstream [build-with-claude](https://github.com/moremas/build-with-claude)
   bundle. Porting the actual BLE GATT pairing to this C++ firmware is open
   work.
+- **BLE Keyboard** — turns the Cardputer into a Bluetooth keyboard for a
+  computer, tablet or phone (pair *Claude Pocket KB*). Held keys and
+  Ctrl / Shift / Alt work as usual, Opt is Cmd / Win, and Fn adds arrows
+  (`;` `,` `.` `/`), F1–F12 (number row), Esc (`` ` ``) and Delete. The
+  NimBLE stack only runs while the app is open and is torn down on exit so
+  the voice flows keep their TLS heap. Leave with the G0 button or Fn + Opt.
+- **IR Remote** — universal remote with the
+  [Flipper-IRDB](https://github.com/Lucaslhm/Flipper-IRDB) (CC0) built into
+  the firmware: ~1.9k devices / 35k buttons across TVs, soundbars, LED
+  strips, fans, projectors, A/Cs and more — no SD card needed.
+  `tools/irdb_pack.py` packs the database into a ~1.1 MB blob
+  (`firmware/assets/irdb.bin`) that is read straight from flash. Browse with
+  `;` `.` (`,` `/` page), letters jump, ENTER sends (hold to repeat). TAB
+  then 1 / 2 / 3 assigns the selected button to an IR Prank slot.
+- **IR Prank** — for your own TV: sends volume-down / volume-up / mute
+  through the IR LED at random intervals (creep down, creep up, ghost mute
+  or chaos), with a step limit and a blanked "stealth" screen. Built-in
+  codes for Samsung, LG, Sony, Philips and Panasonic; T tests the code.
+  L opens a learn screen that captures codes from your original remote via
+  an IR receiver on the Grove port (G1 / G2); those — or buttons assigned
+  from the IR Remote — become the *Learned* brand.
+- **Lie Detector** — party prank. The subject holds ENTER while answering, a
+  polygraph trace driven by the mic level scrolls by, a fake analysis runs
+  and a TRUTH / LIE verdict appears with sound. The operator steers it
+  secretly with `z` (truth) or `x` (lie); otherwise it's a weighted coin
+  flip.
 - **Orbit Fighter** — a Claude-themed side-scrolling pixel shoot-em-up. Five
   biomes (STDOUT → STDIN → STAGING → SANDBOX → PROD), each with a distinct
   enemy mix and a unique boss (REGEX_TYRANT, CONTEXT_OVERFLOW, HALLUCINATION,
@@ -62,11 +88,13 @@ A Claude-styled launcher with eight entries:
 - **Weather** — auto-geolocates via IP, then pulls current conditions plus a
   3-day forecast from [Open-Meteo](https://open-meteo.com/) (no API key
   needed). Press R to refresh.
-- **Radio** — internet radio over HTTP/HTTPS via libhelix-mp3 + libhelix-aac
-  through [`ESP32-audioI2S`](https://github.com/schreibfaul1/ESP32-audioI2S).
-  Hard-coded station list (AIDA Radio, Antenne 1 Heilbronn, Antenne Bayern
-  Chillout, Charivari, Inselradio Mallorca). W/S switches stations, OK toggles
-  play, ←/→ adjusts volume live.
+- **Radio** — internet radio via libhelix-mp3 through
+  [`ESP32-audioI2S`](https://github.com/schreibfaul1/ESP32-audioI2S). Ten
+  hard-coded stations (Antenne 1 Heilbronn, Antenne Bayern Chillout, Charivari,
+  Inselradio Mallorca, 1LIVE, BBC World Service, NPR News, KEXP, Radio Paradise,
+  SomaFM Groove Salad) — all plain HTTP MP3, because libhelix-aac needs ~50 KB
+  of contiguous heap at init that doesn't exist on this no-PSRAM chip after the
+  TLS handshake. W/S switches stations, OK toggles play, ←/→ adjusts volume live.
 - **Translator** — voice-to-voice translator. Press OK, speak in the source
   language, hear the translation in the target language. Whisper transcribes,
   Claude translates with a translation-only system prompt, OpenAI TTS speaks
@@ -120,6 +148,13 @@ Full pin map and codec wiring: [`docs/SPEC.md` §2](docs/SPEC.md).
    # edit and add OPENAI_API_KEY + ANTHROPIC_API_KEY
    ```
    `config.h` is git-ignored, so keys never leave your machine.
+
+   Compile-time keys are only the *last* of three sources. At runtime the
+   firmware prefers NVS (written by the Settings screen), then a `KEY=VALUE`
+   `/keys.txt` on the microSD card, then `config.h`. That is what makes the
+   key-less **Burner build** possible — `pio run -e m5cardputer-adv-burner`
+   forces both key macros to empty strings so the published binary carries
+   nobody's secrets. See [`docs/BURNER.md`](docs/BURNER.md).
 3. Connect the Cardputer ADV via USB-C, then:
    ```bash
    cd firmware

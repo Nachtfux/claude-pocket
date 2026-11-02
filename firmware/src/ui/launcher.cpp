@@ -22,8 +22,12 @@ struct Entry {
 // convention — the everyday apps are at the top so the cursor lands on
 // one of them after a fresh boot.
 constexpr Entry ENTRIES[] = {
+    {"BLE Keyboard",  "Type on your PC", app::Screen::BLEKBD},
     {"Claude Buddy",  "BLE companion",   app::Screen::BUDDY},
     {"Claude Pocket", "Talk to Claude",  app::Screen::POCKET},
+    {"IR Prank",      "Haunt your TV",   app::Screen::IRPRANK},
+    {"IR Remote",     "Universal remote", app::Screen::IRREMOTE},
+    {"Lie Detector",  "Totally science", app::Screen::LIEDETECT},
     {"Orbit Fighter",  "Pixel shmup",     app::Screen::ORBIT},
     {"Radio",         "Internet radio",  app::Screen::RADIO},
     {"Snake",         "Classic",         app::Screen::SNAKE},

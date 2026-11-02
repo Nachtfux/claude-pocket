@@ -27,3 +27,10 @@ firmware/.dummy/
 # Built binaries — distribute via GitHub Releases, not git history.
 dist/
 *.bin
+
+# Exception: the packed IR database is source data the firmware embeds
+# (regenerate with tools/irdb_pack.py).
+!firmware/assets/irdb.bin
+
+# Python
+__pycache__/
