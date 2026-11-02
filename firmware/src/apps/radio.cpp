@@ -61,6 +61,14 @@ bool   g_playing    = false;
 bool   g_codec_done = false;
 char   g_status_line[64] = {0};
 
+// Live stream metadata pushed in from the Audio library's weak callbacks
+// (defined at the bottom of this file). `g_connected` flips to true the
+// first time we see an icy-name come through — that's our signal that
+// the stream is actually playing, not just queued.
+volatile bool g_connected = false;
+volatile bool g_needs_repaint = false;
+char g_now_playing[96] = {0};
+
 uint16_t to565(uint32_t rgb) {
     return M5.Display.color565((rgb >> 16) & 0xff, (rgb >> 8) & 0xff, rgb & 0xff);
 }
@@ -107,6 +115,8 @@ void bump_volume(int delta_pct) {
 void start_current() {
     apply_volume();
     snprintf(g_status_line, sizeof(g_status_line), "Connecting...");
+    g_connected = false;
+    g_now_playing[0] = '\0';
     Serial.printf("[radio] connecting %s — heap=%u\n",
                   STATIONS[g_sel].url, (unsigned)ESP.getFreeHeap());
     bool ok = g_audio.connecttohost(STATIONS[g_sel].url);
@@ -126,24 +136,44 @@ void paint() {
     M5.Display.drawString(STATIONS[g_sel].name, theme::SCREEN_W / 2,
                           theme::CONTENT_TOP + 14);
 
-    // Play state — orange when active, gray when stopped.
-    M5.Display.setTextColor(to565(g_playing ? theme::ORANGE : theme::MID_GRAY),
-                            to565(theme::IVORY));
+    // Three-state indicator:
+    //   not playing   → gray  "■ Stopped"
+    //   playing, but icy-name not yet seen → yellow "Connecting..."
+    //   playing AND streaming → green "▶ Connected"
+    const char* state_text;
+    uint32_t    state_color;
+    if (!g_playing) {
+        state_text  = "■ Stopped";
+        state_color = theme::MID_GRAY;
+    } else if (!g_connected) {
+        state_text  = "Connecting...";
+        state_color = theme::YELLOW;
+    } else {
+        state_text  = "▶ Connected";
+        state_color = theme::GREEN;
+    }
+    M5.Display.setTextColor(to565(state_color), to565(theme::IVORY));
     M5.Display.setTextSize(1.5f);
-    M5.Display.drawString(g_playing ? "▶ Playing" : "■ Stopped",
-                          theme::SCREEN_W / 2,
+    M5.Display.drawString(state_text, theme::SCREEN_W / 2,
                           theme::CONTENT_TOP + 40);
 
-    // Optional status line ("Connecting...", "Volume 75%", etc.) — yellow
-    // so transient value changes pop against the cream-on-dark UI.
-    if (g_status_line[0]) {
+    // Now-playing track title (or the volume bump status line). Showing
+    // the StreamTitle that the Audio library pulls out of the ICY
+    // metadata, so the user sees what's actually on right now.
+    const char* below_text = g_now_playing[0] ? g_now_playing : g_status_line;
+    if (below_text[0]) {
         M5.Display.setTextColor(to565(theme::YELLOW), to565(theme::IVORY));
         M5.Display.setTextSize(1.2f);
-        M5.Display.drawString(g_status_line, theme::SCREEN_W / 2,
+        // Truncate to fit a single line so an over-long title can't break
+        // the layout.
+        char trunc[40];
+        strncpy(trunc, below_text, sizeof(trunc) - 1);
+        trunc[sizeof(trunc) - 1] = '\0';
+        M5.Display.drawString(trunc, theme::SCREEN_W / 2,
                               theme::CONTENT_TOP + 64);
     }
 
-    // Position pill (1/5, 2/5, …) at the bottom-center.
+    // Position pill (1/10, 2/10, …) at the bottom-center.
     char pos[16];
     snprintf(pos, sizeof(pos), "%d / %d", g_sel + 1, N_STATIONS);
     M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
@@ -196,6 +226,13 @@ void tick() {
     // Pump the MP3 decoder + I2S writer; this is what actually plays audio.
     if (g_playing) g_audio.loop();
 
+    // Repaint when the Audio library callback fired with new metadata
+    // (icy-name → "Connected", or a new StreamTitle).
+    if (g_needs_repaint) {
+        g_needs_repaint = false;
+        paint();
+    }
+
     if (!M5Cardputer.Keyboard.isChange() || !M5Cardputer.Keyboard.isPressed()) return;
     auto status = M5Cardputer.Keyboard.keysState();
     // OK / Enter / Space sit on dedicated boolean flags, NOT in the
@@ -244,19 +281,29 @@ void tick() {
 }  // namespace radio
 }  // namespace apps
 
-// Weak callbacks the Audio library calls back into from the streaming
-// pipeline. We just echo them to serial — useful for diagnosing why a
-// station refuses to play. Plain C++ linkage matching the library's
-// own declarations in Audio.h.
+// Weak callbacks the Audio library invokes from the streaming pipeline.
+// Plain C++ linkage matches the library's declarations in Audio.h.
+// They push state into the apps::radio file-scope globals so the screen
+// can flip from "Connecting..." → "Connected" and surface the live
+// StreamTitle as the now-playing line.
 void audio_info(const char* info) {
     if (info) Serial.printf("[radio] %s\n", info);
 }
 void audio_showstation(const char* info) {
     if (info) Serial.printf("[radio] station=%s\n", info);
+    apps::radio::g_connected = true;
+    apps::radio::g_needs_repaint = true;
 }
 void audio_showstreamtitle(const char* info) {
-    if (info) Serial.printf("[radio] title=%s\n", info);
+    if (!info) return;
+    Serial.printf("[radio] title=%s\n", info);
+    strncpy(apps::radio::g_now_playing, info,
+            sizeof(apps::radio::g_now_playing) - 1);
+    apps::radio::g_now_playing[sizeof(apps::radio::g_now_playing) - 1] = '\0';
+    apps::radio::g_needs_repaint = true;
 }
 void audio_eof_stream(const char* info) {
     Serial.printf("[radio] eof: %s\n", info ? info : "(null)");
+    apps::radio::g_connected = false;
+    apps::radio::g_needs_repaint = true;
 }

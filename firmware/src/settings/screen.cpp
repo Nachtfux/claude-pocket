@@ -14,18 +14,20 @@ namespace settings {
 namespace {
 
 enum class Section { MENU, WIFI_SCAN, WIFI_PASS, BLUETOOTH, VOLUME,
-                     BRIGHTNESS, ABOUT };
+                     BRIGHTNESS, BATTERY, ABOUT };
 
 struct Row {
     const char* label;
     Section target;
 };
 
+// Connectivity first (most-used), About last (diagnostic only).
 constexpr Row ROWS[] = {
     {"WiFi",       Section::WIFI_SCAN},
     {"Bluetooth",  Section::BLUETOOTH},
-    {"Volume",     Section::VOLUME},
+    {"Battery",    Section::BATTERY},
     {"Brightness", Section::BRIGHTNESS},
+    {"Volume",     Section::VOLUME},
     {"About",      Section::ABOUT},
 };
 constexpr int N_ROWS = sizeof(ROWS) / sizeof(ROWS[0]);
@@ -64,14 +66,17 @@ void fill_content(uint32_t bg) {
 void paint_menu() {
     fill_content(theme::IVORY);
     M5.Display.setTextColor(to565(theme::DARK), to565(theme::IVORY));
-    M5.Display.setTextSize(2);
+    M5.Display.setTextSize(1.8f);
     M5.Display.setTextDatum(top_left);
     M5.Display.drawString("Settings", 8, theme::CONTENT_TOP + 4);
 
     // 5 entries × 18 px = 90 px after a 26 px header — fits the 119 px
     // content area without scrolling.
-    const int list_y = theme::CONTENT_TOP + 26;
-    const int row_h  = 18;
+    // 6 entries × 15 px = 90 px. Start higher than before (was 26) so the
+    // last row clears the bottom footer hint — at 1.6× labels the rows
+    // were leaking down behind "ESC back ENTER select".
+    const int list_y = theme::CONTENT_TOP + 22;
+    const int row_h  = 15;
     for (int i = 0; i < N_ROWS; ++i) {
         int ry = list_y + i * row_h;
         bool sel = (i == g_sel);
@@ -82,7 +87,7 @@ void paint_menu() {
         }
         M5.Display.setTextColor(to565(theme::DARK),
                                 sel ? to565(theme::LIGHT_GRAY) : to565(theme::IVORY));
-        M5.Display.setTextSize(1.2f);
+        M5.Display.setTextSize(1.6f);
         M5.Display.drawString(ROWS[i].label, 12, ry + 1);
 
         const char* hint = "";
@@ -97,15 +102,24 @@ void paint_menu() {
         } else if (ROWS[i].target == Section::BRIGHTNESS) {
             snprintf(tmp, sizeof(tmp), "%d%%", store().brightness_pct);
             hint = tmp;
+        } else if (ROWS[i].target == Section::BATTERY) {
+            int lvl = M5.Power.getBatteryLevel();
+            if (lvl < 0) lvl = 0;
+            snprintf(tmp, sizeof(tmp), "%d%%", lvl);
+            hint = tmp;
         }
         M5.Display.setTextColor(to565(theme::MID_GRAY),
                                 sel ? to565(theme::LIGHT_GRAY) : to565(theme::IVORY));
+        M5.Display.setTextSize(1.6f);
         M5.Display.setTextDatum(top_right);
         M5.Display.drawString(hint, theme::SCREEN_W - 12, ry + 1);
         M5.Display.setTextDatum(top_left);
     }
 
     M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
+    M5.Display.setTextSize(1);   // ← previously inherited 1.6× from the
+                                 //   hint loop, which made the footer
+                                 //   overlap the last list row.
     M5.Display.setTextDatum(bottom_left);
     M5.Display.drawString("ESC back   ENTER select", 4, theme::SCREEN_H - 2);
     M5.Display.setTextDatum(top_left);
@@ -167,23 +181,58 @@ void paint_brightness() {
     M5.Display.setTextDatum(top_left);
 }
 
+void paint_battery() {
+    fill_content(theme::IVORY);
+    M5.Display.setTextColor(to565(theme::DARK), to565(theme::IVORY));
+    M5.Display.setTextSize(1.8f);
+    M5.Display.setTextDatum(top_left);
+    M5.Display.drawString("Battery", 8, theme::CONTENT_TOP + 4);
+
+    int lvl = M5.Power.getBatteryLevel();
+    if (lvl < 0) lvl = 0;
+    if (lvl > 100) lvl = 100;
+    bool charging = M5.Power.isCharging();
+
+    // Hero percentage, big and orange.
+    char val[16];
+    snprintf(val, sizeof(val), "%d%%", lvl);
+    M5.Display.setTextColor(to565(theme::ORANGE), to565(theme::IVORY));
+    M5.Display.setTextSize(3.0f);
+    M5.Display.setTextDatum(top_center);
+    M5.Display.drawString(val, theme::SCREEN_W / 2, theme::CONTENT_TOP + 30);
+
+    // Charging state in mid gray (or green if currently topping up).
+    M5.Display.setTextColor(to565(charging ? theme::GREEN : theme::MID_GRAY),
+                            to565(theme::IVORY));
+    M5.Display.setTextSize(1.4f);
+    M5.Display.drawString(charging ? "Charging" : "On battery",
+                          theme::SCREEN_W / 2, theme::CONTENT_TOP + 78);
+
+    M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
+    M5.Display.setTextSize(1);
+    M5.Display.setTextDatum(bottom_left);
+    M5.Display.drawString("`  back", 4, theme::SCREEN_H - 2);
+    M5.Display.setTextDatum(top_left);
+}
+
 void paint_about() {
     fill_content(theme::IVORY);
     M5.Display.setTextColor(to565(theme::DARK), to565(theme::IVORY));
-    M5.Display.setTextSize(2);
+    M5.Display.setTextSize(1.8f);
     M5.Display.setTextDatum(top_left);
     M5.Display.drawString("About", 8, theme::CONTENT_TOP + 4);
 
-    M5.Display.setTextSize(1);
-    int y = theme::CONTENT_TOP + 26;
+    int y = theme::CONTENT_TOP + 24;
     char val[48];
 
-    auto row = [&](const char* label, const char* value) {
+    auto row = [&](const char* label, const char* value, float val_size = 1.5f) {
         M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
+        M5.Display.setTextSize(1.5f);
         M5.Display.drawString(label, 8, y);
         M5.Display.setTextColor(to565(theme::DARK), to565(theme::IVORY));
-        M5.Display.drawString(value, 80, y);
-        y += 11;
+        M5.Display.setTextSize(val_size);
+        M5.Display.drawString(value, 100, y);
+        y += 16;
     };
 
     row("Firmware", CLAUDE_POCKET_VERSION);
@@ -199,15 +248,18 @@ void paint_about() {
     row("Uptime", val);
 
     if (WiFi.status() == WL_CONNECTED) {
-        row("IP", WiFi.localIP().toString().c_str());
+        row("IP", WiFi.localIP().toString().c_str(), 1.2f);
         snprintf(val, sizeof(val), "%d dBm", WiFi.RSSI());
-        row("WiFi RSSI", val);
+        row("RSSI", val);
     } else {
-        row("WiFi", "disconnected");
+        row("WiFi", "disconnected", 1.2f);
     }
-    row("MAC", WiFi.macAddress().c_str());
+    // MAC stays at 1.0× — the 17-char address doesn't fit at 1.5× without
+    // running off the right edge of the 240 px display.
+    row("MAC", WiFi.macAddress().c_str(), 1.0f);
 
     M5.Display.setTextColor(to565(theme::MID_GRAY), to565(theme::IVORY));
+    M5.Display.setTextSize(1);
     M5.Display.setTextDatum(bottom_left);
     M5.Display.drawString("`  back", 4, theme::SCREEN_H - 2);
     M5.Display.setTextDatum(top_left);
@@ -358,6 +410,7 @@ void handle_menu(char k) {
         else if (g_section == Section::BLUETOOTH)   paint_bluetooth();
         else if (g_section == Section::VOLUME)      paint_volume();
         else if (g_section == Section::BRIGHTNESS)  paint_brightness();
+        else if (g_section == Section::BATTERY)     paint_battery();
         else if (g_section == Section::ABOUT)       paint_about();
     } else if (k == 0x1b) {
         app::goto_screen(app::Screen::LAUNCHER);
@@ -401,6 +454,13 @@ void handle_brightness(char k) {
 }
 
 void handle_about(char k) {
+    if (k == 0x1b || k == '\r') {
+        g_section = Section::MENU;
+        paint_menu();
+    }
+}
+
+void handle_battery(char k) {
     if (k == 0x1b || k == '\r') {
         g_section = Section::MENU;
         paint_menu();
@@ -493,6 +553,7 @@ void tick() {
             case Section::BLUETOOTH:  handle_bluetooth(k);  break;
             case Section::VOLUME:     handle_volume(k);     break;
             case Section::BRIGHTNESS: handle_brightness(k); break;
+            case Section::BATTERY:    handle_battery(k);    break;
             case Section::ABOUT:      handle_about(k);      break;
         }
     };
