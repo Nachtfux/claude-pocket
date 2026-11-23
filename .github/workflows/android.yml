@@ -1,0 +1,51 @@
+name: Android (Hey Claude)
+
+on:
+  push:
+    paths:
+      - "android/hey-claude/**"
+      - ".github/workflows/android.yml"
+  pull_request:
+    paths:
+      - "android/hey-claude/**"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: android/hey-claude
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # The preBuild hook downloads the openWakeWord models from GitHub releases
+      # into app/src/main/assets/models/ (they are not committed, CC BY-NC-SA).
+      - name: Build debug APK and run unit tests
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug testDebugUnitTest
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hey-claude-debug-apk
+          path: android/hey-claude/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

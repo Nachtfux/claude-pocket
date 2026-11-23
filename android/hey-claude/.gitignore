@@ -1,0 +1,10 @@
+build/
+.gradle/
+.kotlin/
+local.properties
+*.iml
+.idea/
+captures/
+# openWakeWord models are CC BY-NC-SA — downloaded at build time, never committed.
+app/src/main/assets/models/*.onnx
+app/src/main/assets/models/*.part

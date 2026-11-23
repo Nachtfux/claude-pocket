@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Anthropic brand palette (see docs/SPEC.md §7) -->
+    <color name="ivory">#FFFAF9F5</color>
+    <color name="orange">#FFD97757</color>
+    <color name="dark">#FF141413</color>
+</resources>

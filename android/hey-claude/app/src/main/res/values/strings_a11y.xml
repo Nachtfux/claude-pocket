@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_label">Hey Claude Auto-Tap</string>
+    <string name="a11y_description">Hey Claude nutzt diese Bedienungshilfe ausschließlich, um nach dem Wake-Word in der Claude-App den Sprachmodus-Button anzutippen und zu erkennen, wann du die Claude-App wieder verlässt (dann hört Hey Claude wieder zu). Es werden keine Inhalte übertragen, in anderen Apps wird nichts angetippt; zur Fehlersuche landen nur Button-Beschriftungen im lokalen Systemlog (logcat).</string>
+</resources>

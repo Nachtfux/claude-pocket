@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hey Claude</string>
+
+    <!-- Notification -->
+    <string name="notif_channel">Wake-Word</string>
+    <string name="notif_starting">Startet …</string>
+    <string name="notif_listening">Hört zu – sag das Wake-Word</string>
+    <string name="notif_paused">Pausiert – Claude ist dran</string>
+    <string name="notif_error">Fehler – siehe App</string>
+    <string name="notif_action_stop">Stopp</string>
+
+    <!-- Status -->
+    <string name="state_stopped">Gestoppt</string>
+    <string name="state_starting">Startet …</string>
+    <string name="state_listening">Hört zu</string>
+    <string name="state_paused">Pausiert (Claude aktiv)</string>
+    <string name="state_error">Fehler</string>
+    <string name="status_model">Modell: %1$s</string>
+    <string name="status_mic">Mikrofon-Recht: %1$s</string>
+    <string name="status_a11y">Bedienungshilfe: %1$s</string>
+    <string name="status_overlay">Overlay-Recht: %1$s</string>
+    <string name="status_claude">Claude-App: %1$s</string>
+    <string name="status_silenced">Mikrofon liefert nur Stille – App einmal öffnen und Dienst neu starten</string>
+    <string name="model_unknown">wird beim Start geladen</string>
+    <string name="yes">ja</string>
+    <string name="no">nein</string>
+    <string name="claude_missing">Claude-App nicht installiert (%1$s)</string>
+
+    <!-- Buttons -->
+    <string name="btn_permission">Mikrofon erlauben</string>
+    <string name="btn_start">Zuhören starten</string>
+    <string name="btn_stop">Zuhören stoppen</string>
+    <string name="btn_a11y">Bedienungshilfe aktivieren</string>
+    <string name="btn_overlay">Overlay-Recht erteilen</string>
+    <string name="btn_launch_test">Test: Claude jetzt starten</string>
+
+    <!-- Threshold + mic test -->
+    <string name="threshold_label">Schwelle: %1$.2f</string>
+    <string name="test_title">Mikrofon-Test</string>
+    <string name="btn_test_start">Test starten</string>
+    <string name="btn_test_stop">Test stoppen</string>
+    <string name="test_level">Pegel</string>
+    <string name="test_score">Wake-Score</string>
+    <string name="test_info">Score %1$.2f · Spitze %2$.2f</string>
+    <string name="test_service_running">Dienst läuft (Spitze %1$.2f) – zum Testen stoppen</string>
+    <string name="test_mic_failed">Mikrofon konnte nicht geöffnet werden</string>
+</resources>
