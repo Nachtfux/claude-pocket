@@ -195,3 +195,12 @@ and OpenAI Whisper + `gpt-4o-mini-tts`.
 
 MIT — see [`LICENSE`](LICENSE). Not affiliated with or endorsed by Anthropic
 or M5Stack; "Claude" and the Claude mark are trademarks of Anthropic.
+
+## Echo Spot: „Hey Claude" (Nebenprojekt)
+
+Ein Echo Spot (2017) lässt sich mit LineageOS 18.1 zu einem Claude-Gerät umbauen:
+die offizielle Claude-App (Login mit dem eigenen Abo) plus die kleine App
+[`android/hey-claude`](android/hey-claude), die lokal auf „Hey Claude" hört
+(openWakeWord), Claude öffnet und den Voice-Modus automatisch startet.
+Anleitung: [`docs/ECHO_SPOT.md`](docs/ECHO_SPOT.md) · Mac-Helfer: [`tools/spot/`](tools/spot) ·
+eigenes Wake-Word trainieren: [`docs/HEY_CLAUDE_WAKEWORD.md`](docs/HEY_CLAUDE_WAKEWORD.md).

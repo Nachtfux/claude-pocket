@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2016  # single-quoted $vars are meant for the child shell
 # amonet-macos.sh - run the amonet-rook unlock from macOS (UNTESTED on Mac).
 #
 # The amonet-rook release zip is made for Windows (fastbrick.bat -> .ps1) and
@@ -26,7 +27,7 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-# shellcheck source=lib.sh
+# shellcheck source=SCRIPTDIR/lib.sh
 . "$HERE/lib.sh"
 
 [ $# -ge 1 ] || die "Usage: $0 <extracted-amonet-dir> [fastbrick|boot-recovery|boot-fastboot]"

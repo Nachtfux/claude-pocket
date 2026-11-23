@@ -37,6 +37,7 @@ Open work:
 
 - **Claude Buddy** entry is still a stub; the BLE companion lives in the
   MicroPython buddy bundle and hasn't been ported yet.
+- **Echo Spot side project:** `android/hey-claude` (Android 11 wake-word launcher for the official Claude app), `tools/spot/` (macOS flash helpers), `docs/ECHO_SPOT.md`. Untested on real hardware so far.
 - **Wake word (M7)** — needs a custom "Claude" ESP-SR WakeNet model,
   not started.
 - TLS currently uses `setInsecure()`. For a public deployment, pin a root

@@ -8,3 +8,5 @@ captures/
 # openWakeWord models are CC BY-NC-SA — downloaded at build time, never committed.
 app/src/main/assets/models/*.onnx
 app/src/main/assets/models/*.part
+# Never commit any ONNX model (pretrained ones are CC BY-NC-SA, hey_claude.onnx is user data).
+*.onnx

@@ -44,6 +44,19 @@ confirm() {
   esac
 }
 
+# confirm_safety "Question"    -> like confirm, but ALWAYS asks: ASSUME_YES is
+# ignored. Use it for safety checks (hash verified? backup exists? right
+# device?), never let automation answer those.
+confirm_safety() {
+  local answer
+  printf '%s' "${C_YEL}??${C_RST} $1 [y/N] "
+  read -r answer || return 1
+  case "$(lower "$answer")" in
+    y|yes|j|ja) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 # confirm_hard "What will happen" -> user must type YES (upper case)
 confirm_hard() {
   local answer
@@ -123,7 +136,7 @@ adb_state() {
   local s
   s="$(adb get-state 2>/dev/null | tr -d '\r' || true)"
   if [ -z "$s" ]; then
-    if adb devices 2>/dev/null | grep -q 'unauthorized'; then s=unauthorized; else s=none; fi
+    if adb devices 2>/dev/null | grep 'unauthorized' >/dev/null; then s=unauthorized; else s=none; fi
   fi
   printf '%s' "$s"
 }

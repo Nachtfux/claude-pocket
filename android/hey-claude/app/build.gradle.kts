@@ -16,6 +16,11 @@ android {
         targetSdk = 30
         versionCode = 1
         versionName = "0.1.0"
+        // The Echo Spot (MT8163) runs ARM; dropping x86/x86_64 ONNX Runtime
+        // libraries cuts the APK from ~80 MB to ~35 MB.
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
     }
 
     buildTypes {

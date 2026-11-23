@@ -1,25 +1,30 @@
 #!/bin/bash
 # backup.sh - full partition backup of the Echo Spot (rook) from TWRP.
 #
-# Reads every partition from /dev/block/platform/mtk-msdc.0/by-name plus
-# mmcblk0boot0/1, pulls it with adb, checks size (/proc/partitions) and
-# sha256 (device vs. Mac) and writes MANIFEST.txt. READ-ONLY on the device.
+# Reads every partition from the by-name directory (located on the device,
+# usually /dev/block/platform/mtk-msdc.0/by-name) plus mmcblk0boot0/1, pulls
+# it with adb, checks size (/proc/partitions) and sha256 (device vs. Mac).
+# MANIFEST.txt (+ .sha256 and a COMPLETE marker) is only written when every
+# partition verified; a partial run leaves MANIFEST.txt.partial behind.
+# READ-ONLY on the device.
 #
 # Usage:
 #   tools/spot/backup.sh [--dry-run] [--with-userdata] [outdir]
 #     --dry-run        print the plan only; without a device it uses a
 #                      built-in example map (for testing the script)
 #     --with-userdata  also pull userdata (big, contains personal data)
-#     outdir           default: ./spot-backup-YYYYmmdd-HHMMSS
+#     outdir           default: ~/EchoSpot-Backup/spot-backup-YYYYmmdd-HHMMSS
 #
 # The backup contains device-unique data (serials, keys): keep it private.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-# shellcheck source=lib.sh
+# shellcheck source=SCRIPTDIR/lib.sh
 . "$HERE/lib.sh"
 
-BYNAME=/dev/block/platform/mtk-msdc.0/by-name
+BYNAME=/dev/block/platform/mtk-msdc.0/by-name   # default / dry-run label
+# Partitions a usable rook backup must contain (lower case).
+CORE_PARTS="boot recovery system lk_real tee1_real tee2_real"
 DRY=0; WITH_USERDATA=0; OUT=""
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -31,7 +36,7 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
-[ -n "$OUT" ] || OUT="spot-backup-$(date +%Y%m%d-%H%M%S)"
+[ -n "$OUT" ] || OUT="$HOME/EchoSpot-Backup/spot-backup-$(date +%Y%m%d-%H%M%S)"
 
 # Example map (name target) and /proc/partitions sizes (1K blocks) used by
 # --dry-run when no device is attached. Layout follows the rook guide;
@@ -89,10 +94,15 @@ else
 fi
 
 if [ "$SOURCE" = device ]; then
+  # The by-name path differs between kernels (mtk-msdc.0/by-name,
+  # mtk-msdc.0/11230000.msdc0/by-name, ...): find it instead of hard-coding.
+  # shellcheck disable=SC2016  # expanded on the device, not here
+  BYNAME="$(adb shell 'for d in /dev/block/platform/*/by-name /dev/block/platform/*/*/by-name /dev/block/by-name; do [ -d "$d" ] && echo "$d"; done; true' </dev/null | tr -d '\r' | sed -n 1p)"
+  [ -n "$BYNAME" ] || die "No by-name directory under /dev/block/platform on the device - is this really a rook in TWRP?"
   info "Reading partition map from $BYNAME"
-  # name<space>resolved-target, one per line
-  MAP="$(adb shell "for f in $BYNAME/*; do echo \"\${f##*/} \$(readlink -f \"\$f\")\"; done" | tr -d '\r')"
-  if [ -z "$MAP" ] || printf '%s' "$MAP" | grep -q 'No such file'; then
+  # name<space>resolved-target, one per line; skip a non-matching glob.
+  MAP="$(adb shell "for f in $BYNAME/*; do [ -e \"\$f\" ] || continue; echo \"\${f##*/} \$(readlink -f \"\$f\")\"; done" </dev/null | tr -d '\r')"
+  if [ -z "$MAP" ] || printf '%s\n' "$MAP" | grep 'No such file' >/dev/null; then
     die "Could not read $BYNAME - is this really a rook in TWRP?"
   fi
   SIZES="$(adb shell cat /proc/partitions | tr -d '\r' | awk 'NF==4 && $1 ~ /^[0-9]+$/ {print $4, $3}')"
@@ -145,12 +155,22 @@ EOF
 add_plan mmcblk0boot0 /dev/block/mmcblk0boot0
 add_plan mmcblk0boot1 /dev/block/mmcblk0boot1
 
+# Refuse a plan that lacks the core partitions (e.g. an unreadable by-name
+# directory would otherwise leave only boot0/boot1 and look like success).
+MISSING=""
+for p in $CORE_PARTS; do
+  printf '%s' "$PLAN" | awk -v p="$p" 'tolower($1) == p {f=1} END {exit !f}' || MISSING="$MISSING $p"
+done
+
 step "Backup plan ($PRODUCT) -> $OUT"
 printf '%s' "$PLAN" | awk '{printf "     %-14s %-26s %12d bytes\n", $1, $2, $3}'
 if [ -n "$SKIPPED" ]; then
   info "Skipped:"; printf '%s' "$SKIPPED" | sed 's/^/     - /'
 fi
 info "Total: $((TOTAL / 1024 / 1024)) MiB"
+if [ -n "$MISSING" ]; then
+  die "Plan is missing core partition(s):$MISSING - partition map looks wrong, refusing to back up."
+fi
 
 if [ "$DRY" = 1 ]; then
   ok "Dry run - nothing pulled."
@@ -159,13 +179,20 @@ fi
 
 # Free space check (df -k works on macOS and Linux)
 mkdir -p "$OUT"
+if have git && git -C "$OUT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  warn "$OUT is inside a git repository - never commit this backup (device-unique data)."
+  confirm "Use it anyway?" || exit 1
+fi
 FREE_KB="$(df -k "$OUT" | awk 'NR==2 {print $4}')"
 if [ -n "$FREE_KB" ] && [ $((FREE_KB * 1024)) -lt "$TOTAL" ]; then
   die "Not enough free space in $OUT ($((FREE_KB / 1024)) MiB free)."
 fi
 confirm "Pull $((TOTAL / 1024 / 1024)) MiB into $OUT now? (read-only on the Spot)" || { info "Aborted."; exit 0; }
 
-MANIFEST="$OUT/MANIFEST.txt"
+# Written as .partial; only renamed to MANIFEST.txt when everything verified,
+# so flash-lineage.sh never mistakes a broken/interrupted run for a backup.
+MANIFEST="$OUT/MANIFEST.txt.partial"
+rm -f "$OUT/MANIFEST.txt" "$OUT/MANIFEST.txt.sha256" "$OUT/COMPLETE"
 {
   echo "# Echo Spot (rook) partition backup"
   echo "# date:    $(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -196,10 +223,12 @@ done <<EOF
 $PLAN
 EOF
 
-( cd "$OUT" && printf '%s  MANIFEST.txt\n' "$(sha256_local MANIFEST.txt)" > MANIFEST.txt.sha256 )
 echo
 if [ "$FAIL" -gt 0 ]; then
-  die "$FAIL partition(s) failed verification - re-run before flashing anything!"
+  die "$FAIL partition(s) failed verification - re-run before flashing anything! ($MANIFEST kept for diagnosis)"
 fi
+mv "$MANIFEST" "$OUT/MANIFEST.txt"
+( cd "$OUT" && printf '%s  MANIFEST.txt\n' "$(sha256_local MANIFEST.txt)" > MANIFEST.txt.sha256 )
+date -u +%Y-%m-%dT%H:%M:%SZ > "$OUT/COMPLETE"
 ok "Backup complete: $OUT (MANIFEST.txt). Copy it somewhere safe and keep it private."
 hint "Next: tools/spot/flash-lineage.sh lineage-18.1-*-rook.zip <sha256>"

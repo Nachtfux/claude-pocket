@@ -12,6 +12,7 @@ import android.graphics.Path
 import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
@@ -39,6 +40,7 @@ class VoiceModeA11yService : AccessibilityService() {
         private const val MAX_TRIES = 8
         private const val EXTRA_TRIES_AFTER_NEW_CHAT = 4
         private const val LEAVE_DEBOUNCE_MS = 1_500L
+        private const val SESSION_SCREEN_MAX_MS = 30 * 60_000L
         private const val MAX_DEPTH = 40
         private const val MAX_NODES = 1_500
         private const val MAX_TEXT_MATCH_LEN = 40
@@ -121,7 +123,38 @@ class VoiceModeA11yService : AccessibilityService() {
         stopTapLoop()
     }
 
+    /**
+     * Keep the display on while a voice session runs. Otherwise the screen
+     * timeout (post-install.sh sets 120 s) turns it off mid-conversation, the
+     * SCREEN_OFF handler resumes our AudioRecord and Android may hand the mic
+     * to us instead of Claude. Capped so a stuck session can't burn the panel.
+     */
+    private var screenLock: PowerManager.WakeLock? = null
+
+    @Suppress("DEPRECATION")
+    private fun holdScreen() {
+        if (screenLock?.isHeld == true) return
+        try {
+            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+            screenLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "HeyClaude:session").apply {
+                setReferenceCounted(false)
+                acquire(SESSION_SCREEN_MAX_MS)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "A11y: screen wake lock failed", e)
+        }
+    }
+
+    private fun releaseScreen() {
+        try {
+            screenLock?.takeIf { it.isHeld }?.release()
+        } catch (_: Exception) {
+        }
+        screenLock = null
+    }
+
     override fun onDestroy() {
+        releaseScreen()
         instance = null
         stopTapLoop()
         handler.removeCallbacks(leaveCheck)
@@ -169,6 +202,7 @@ class VoiceModeA11yService : AccessibilityService() {
         if (pkg == claude) {
             if (!LaunchState.claudeSeen) Log.i(TAG, "A11y: Claude is in foreground")
             LaunchState.claudeSeen = true
+            holdScreen()
             handler.removeCallbacks(leaveCheck)
             leaveCheckPosted = false
         } else if (LaunchState.claudeSeen && !leaveCheckPosted) {
@@ -197,6 +231,7 @@ class VoiceModeA11yService : AccessibilityService() {
 
     private fun sendResume(reason: String) {
         Log.i(TAG, "A11y: sending RESUME ($reason)")
+        releaseScreen()
         LaunchState.endSession()
         stopTapLoop()
         handler.removeCallbacks(leaveCheck)

@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2016  # single-quoted $vars are meant for the child shell
 # preflight.sh - check the Mac for everything the Echo Spot (rook) flow needs
 # and tell you what to do next based on what is plugged in.
 #
@@ -8,7 +9,7 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-# shellcheck source=lib.sh
+# shellcheck source=SCRIPTDIR/lib.sh
 . "$HERE/lib.sh"
 
 MISSING=0
@@ -83,8 +84,8 @@ if have system_profiler; then
   if printf '%s' "$USB_DUMP" | grep -qi '0x1949'; then USB_SEEN="${USB_SEEN} amazon"; fi
 elif have lsusb; then
   lsusb | sed 's/^/     /'
-  if lsusb | grep -qi '0e8d:'; then USB_SEEN="mtk"; fi
-  if lsusb | grep -qi '1949:'; then USB_SEEN="${USB_SEEN} amazon"; fi
+  if lsusb | grep -i '0e8d:' >/dev/null; then USB_SEEN="mtk"; fi
+  if lsusb | grep -i '1949:' >/dev/null; then USB_SEEN="${USB_SEEN} amazon"; fi
 fi
 # shellcheck disable=SC2012
 SERIAL_PORTS="$(ls /dev/cu.usbmodem* /dev/ttyACM* 2>/dev/null | tr '\n' ' ' || true)"

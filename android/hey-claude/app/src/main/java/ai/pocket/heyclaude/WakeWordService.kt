@@ -524,7 +524,7 @@ class WakeWordService : Service() {
 
     private fun goForeground(text: String) {
         val n = buildNotification(text)
-        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
         } else {
             0
